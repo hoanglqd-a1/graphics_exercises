@@ -5,13 +5,8 @@ import android.opengl.GLES30;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.example.computergraphics.utils.MaterialFileHandle;
 import com.example.computergraphics.utils.MatrixUtils;
-import com.example.computergraphics.utils.Utility;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.example.computergraphics.utils.Utils;
 
 public class Line extends GraphicObject {
     static float []  defaultSource = {
@@ -109,7 +104,7 @@ public class Line extends GraphicObject {
         // Set color for drawing the triangle
         GLES30.glUniform4fv(colorHandle, 1, color, 0);
 
-        modelMatrix = Utility.getModelMatrix(translation, rotation, scale);
+        modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
         Matrix.multiplyMM(modelMatrix, 0, worldRotationMatrix, 0, modelMatrix, 0);
         float [] vpMatrix = new float[16];
         Matrix.multiplyMM(vpMatrix, 0, pMatrix, 0, vMatrix, 0);
@@ -130,13 +125,13 @@ public class Line extends GraphicObject {
         GLES30.glDisableVertexAttribArray(positionHandle);
     }
     public float[] getWorldSource(){
-        float[] modelMatrix = Utility.getModelMatrix(translation, rotation, scale);
+        float[] modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
         float[] worldSource = new float[] {source[0], source[1], source[2], 1};
         Matrix.multiplyMV(worldSource, 0, modelMatrix, 0, worldSource, 0);
         return new float[] {worldSource[0], worldSource[1], worldSource[2]};
     }
     public float[] getWorldDirection(){
-        float[] modelMatrix = Utility.getModelMatrix(translation, rotation, scale);
+        float[] modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
         float[] worldDirection = new float[] {direction[0], direction[1], direction[2], 1};
         Matrix.multiplyMV(worldDirection, 0, modelMatrix, 0, worldDirection, 0);
         return new float[] {worldDirection[0], worldDirection[1], worldDirection[2]};

@@ -124,19 +124,13 @@ public class Cube extends GraphicObject {
             1.0f, 1.0f,
             1.0f, 0.0f,
     };
-    public Cube(Context context) {
+    public Cube(int program, Context context) {
         this(createData(defaultCubeCoords, defaultDrawOrder, 3),
             defaultNormalData, defaultTextureCoordinateData,
-            GLES30.glCreateProgram(), context);
-//        mtl.textureHandle = loadTexture(context, R.drawable.bumpy_bricks_public_domain);
+            program, context);
+        mtl.textureHandle = loadTexture(context, R.drawable.bumpy_bricks_public_domain);
     }
     public Cube(float [] vertexData, float [] normalData, float [] textureData, int program, Context context){
         super(vertexData, normalData, textureData, program, context);
-    }
-    public Cube(float[] min, float[] max, Context context){
-        this(context);
-        float[] scale = MatrixUtils.sub(max, min);
-        this.translation = MatrixUtils.mul(MatrixUtils.add(min, max), 0.5f);
-        this.scale = scale;
     }
 }

@@ -1,9 +1,10 @@
 #version 300 es
-uniform vec4 uColor;
+
 uniform mat4 uMVPMatrix;
 uniform mat4 uMVMatrix;
 uniform bool uUseTexture;
 uniform bool uUseNormal;
+uniform vec4 uColor;
 
 in vec2 aTextureCoordinate;
 in vec4 aPosition;

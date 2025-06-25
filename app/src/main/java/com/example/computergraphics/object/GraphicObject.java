@@ -11,9 +11,9 @@ import android.util.Log;
 
 import com.example.computergraphics.R;
 import com.example.computergraphics.utils.MaterialFileHandle;
-import com.example.computergraphics.MyGLRenderer;
+import com.example.computergraphics.renderer.MyGLRenderer;
 import com.example.computergraphics.utils.MatrixUtils;
-import com.example.computergraphics.utils.Utility;
+import com.example.computergraphics.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class GraphicObject {
@@ -215,8 +214,8 @@ public class GraphicObject {
         return data;
     }
     protected void initProgram() {
-        String vertexShaderCode = Utility.readRawTextFile(context, R.raw.vertex_shader);
-        String fragmentShaderCode = Utility.readRawTextFile(context, R.raw.fragment_shader);
+        String vertexShaderCode = Utils.readRawTextFile(context, R.raw.vertex_shader);
+        String fragmentShaderCode = Utils.readRawTextFile(context, R.raw.fragment_shader);
         int vertexShader = MyGLRenderer.loadShader(GLES30.GL_VERTEX_SHADER,
                 vertexShaderCode);
         int fragmentShader = MyGLRenderer.loadShader(GLES30.GL_FRAGMENT_SHADER,
@@ -303,7 +302,7 @@ public class GraphicObject {
         }
         return curr;
     }
-    public void draw(float [] vMatrix, float[] pMatrix, float[] worldRotationMatrix, float [] eye) {
+    public void draw(float[] vMatrix, float[] pMatrix, float[] worldRotationMatrix, float[] eye) {
         // Add program to OpenGL ES environment
         GLES30.glUseProgram(program);
 
@@ -341,7 +340,7 @@ public class GraphicObject {
 
         // Set color for drawing the triangle
         GLES30.glUniform4fv(colorHandle, 1, color, 0);
-        modelMatrix = Utility.getModelMatrix(translation, rotation, scale);
+        modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
         Matrix.multiplyMM(modelMatrix, 0, worldRotationMatrix, 0, modelMatrix, 0);
         float [] vpMatrix = new float[16];
         Matrix.multiplyMM(vpMatrix, 0, pMatrix, 0, vMatrix, 0);
@@ -465,7 +464,7 @@ public class GraphicObject {
         this.scale = scale;
     }
     public float [] getWorldVertices(){
-        float [] modelMatrix = Utility.getModelMatrix(translation, rotation, scale);
+        float [] modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
         float [] worldVertices = new float[vertexData.length];
         for(int i=0; i<vertexData.length; i+=3){
             float [] vertex = new float[] {vertexData[i], vertexData[i+1], vertexData[i+2], 1};

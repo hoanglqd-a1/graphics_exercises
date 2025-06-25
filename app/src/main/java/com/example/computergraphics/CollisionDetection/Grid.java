@@ -3,12 +3,10 @@ package com.example.computergraphics.CollisionDetection;
 import static java.lang.Math.min;
 import static java.lang.Math.max;
 
-import android.util.Log;
-
 import com.example.computergraphics.object.GraphicObject;
 import com.example.computergraphics.object.Line;
 import com.example.computergraphics.utils.MatrixUtils;
-import com.example.computergraphics.utils.Utility;
+import com.example.computergraphics.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,11 +106,11 @@ public class Grid {
             }
         }
         // calculate the union of range in 3 axis
-        float[] union = Utility.Union(
+        float[] union = Utils.Union(
                 dist2VoxelIntersectsEachAxis[0],
                 dist2VoxelIntersectsEachAxis[1]);
         if(union == null) return new HashSet<>();
-        union = Utility.Union(union,
+        union = Utils.Union(union,
                 dist2VoxelIntersectsEachAxis[2]);
         if(union == null) return new HashSet<>();
         float first = union[0];

@@ -2,28 +2,25 @@ package com.example.computergraphics.object;
 
 import android.content.Context;
 import android.opengl.GLES30;
-import android.opengl.Matrix;
 import android.util.Log;
 
-import com.example.computergraphics.MyGLRenderer;
+import com.example.computergraphics.renderer.MyGLRenderer;
 import com.example.computergraphics.R;
-import com.example.computergraphics.utils.Utility;
+import com.example.computergraphics.utils.Utils;
 
 import java.nio.FloatBuffer;
-import java.util.Arrays;
-import java.util.Random;
 
-public class GroupedGraphicObjects extends GraphicObject{
+public class GroupedObjects extends GraphicObject{
     private FloatBuffer instanceModelMatrixBuffer;
     private int instanceMatrixBufferId;
     public int copies;
-    public GroupedGraphicObjects(float[] vertexData,
-                              float[] normalData,
-                              float[] textureCoordinateData,
-                              int program,
-                              Context context,
-                              int copies,
-                              float[] instancedModelMatrices){
+    public GroupedObjects(float[] vertexData,
+                          float[] normalData,
+                          float[] textureCoordinateData,
+                          int program,
+                          Context context,
+                          int copies,
+                          float[] instancedModelMatrices){
         super(vertexData, normalData, textureCoordinateData, program, context);
         this.copies = copies;
         instanceModelMatrixBuffer = toBuffer(instancedModelMatrices);
@@ -36,7 +33,7 @@ public class GroupedGraphicObjects extends GraphicObject{
                 null, GLES30.GL_DYNAMIC_DRAW); // Use DYNAMIC_DRAW as data will change
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0); // Unbind
     }
-    public GroupedGraphicObjects(Context context, int copies, float[] instancedModelMatrices){
+    public GroupedObjects(Context context, int copies, float[] instancedModelMatrices){
         this(defaultVertexData,
             defaultNormalData,
             null,
@@ -46,8 +43,8 @@ public class GroupedGraphicObjects extends GraphicObject{
             instancedModelMatrices);
     }
     protected void initProgram() {
-        String vertexShaderCode = Utility.readRawTextFile(context, R.raw.instanced_vertex_shader);
-        String fragmentShaderCode = Utility.readRawTextFile(context, R.raw.fragment_shader);
+        String vertexShaderCode = Utils.readRawTextFile(context, R.raw.instanced_vertex_shader);
+        String fragmentShaderCode = Utils.readRawTextFile(context, R.raw.fragment_shader);
         int vertexShader = MyGLRenderer.loadShader(GLES30.GL_VERTEX_SHADER,
                 vertexShaderCode);
         int fragmentShader = MyGLRenderer.loadShader(GLES30.GL_FRAGMENT_SHADER,

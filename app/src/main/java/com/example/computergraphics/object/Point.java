@@ -5,7 +5,7 @@ import android.opengl.GLES30;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.example.computergraphics.utils.Utility;
+import com.example.computergraphics.utils.Utils;
 
 public class Point extends GraphicObject {
     public final int typ = 0;
@@ -50,7 +50,7 @@ public class Point extends GraphicObject {
 
         GLES30.glUniform4fv(colorHandle, 1, color, 0);
 
-        modelMatrix = Utility.getModelMatrix(translation, rotation, scale);
+        modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
         Matrix.multiplyMM(modelMatrix, 0, worldRotationMatrix, 0, modelMatrix, 0);
         float [] vpMatrix = new float[16];
         Matrix.multiplyMM(vpMatrix, 0, pMatrix, 0, vMatrix, 0);

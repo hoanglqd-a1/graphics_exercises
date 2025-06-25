@@ -3,12 +3,10 @@ package com.example.computergraphics.utils;
 
 import android.content.Context;
 import android.opengl.Matrix;
-import android.util.Log;
 
 import java.io.*;
-import java.util.Arrays;
 
-public class Utility {
+public class Utils {
     public static String readRawTextFile(Context context, int resId) {
         InputStream inputStream = context.getResources().openRawResource(resId);
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
