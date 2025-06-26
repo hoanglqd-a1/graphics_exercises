@@ -162,5 +162,8 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
             // Disable vertex array
             GLES30.glDisableVertexAttribArray(positionHandle);
         }
+        public void useProgram(){
+            GLES30.glUseProgram(program);
+        }
     }
 }

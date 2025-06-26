@@ -124,13 +124,13 @@ public class Cube extends GraphicObject {
             1.0f, 1.0f,
             1.0f, 0.0f,
     };
-    public Cube(int program, Context context) {
+    public Cube(Context context) {
         this(createData(defaultCubeCoords, defaultDrawOrder, 3),
             defaultNormalData, defaultTextureCoordinateData,
-            program, context);
+            context);
         mtl.textureHandle = loadTexture(context, R.drawable.bumpy_bricks_public_domain);
     }
-    public Cube(float [] vertexData, float [] normalData, float [] textureData, int program, Context context){
-        super(vertexData, normalData, textureData, program, context);
+    public Cube(float [] vertexData, float [] normalData, float [] textureData, Context context){
+        super(vertexData, normalData, textureData, context);
     }
 }

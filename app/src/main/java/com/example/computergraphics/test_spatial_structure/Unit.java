@@ -64,7 +64,7 @@ public class Unit {
             float[] direction = new float[] {
                 input.directions[i*3], input.directions[i*3+1], input.directions[i*3+2]
             };
-            Line tmp = new Line(origin, direction, 0, 0, context);
+            Line tmp = new Line(origin, direction, 0, context);
             lines.add(tmp);
         }
         List<Integer>[] intersectedObjectsList = new ArrayList[input.n_rays];

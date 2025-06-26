@@ -14,6 +14,7 @@ public class GroupedObjects extends GraphicObject{
     private FloatBuffer instanceModelMatrixBuffer;
     private int instanceMatrixBufferId;
     public int copies;
+    public int program;
     public GroupedObjects(float[] vertexData,
                           float[] normalData,
                           float[] textureCoordinateData,
@@ -21,7 +22,8 @@ public class GroupedObjects extends GraphicObject{
                           Context context,
                           int copies,
                           float[] instancedModelMatrices){
-        super(vertexData, normalData, textureCoordinateData, program, context);
+        super(vertexData, normalData, textureCoordinateData, context);
+        this.program = program;
         this.copies = copies;
         instanceModelMatrixBuffer = toBuffer(instancedModelMatrices);
 

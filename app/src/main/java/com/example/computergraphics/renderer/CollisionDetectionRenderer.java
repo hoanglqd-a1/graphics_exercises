@@ -29,7 +29,7 @@ public class CollisionDetectionRenderer extends BaseRenderer {
     private Line line;
     private Cube [] cubes;
     private Line [] lines;
-    private List<Triangle> triangles;
+    private List<GraphicObject> triangles;
     private GroupedObjects groupedObjects;
     private Grid grid;
     private KDTree kdtree;
@@ -57,20 +57,15 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         GLES30.glEnable(GLES30.GL_DEPTH_TEST);
         GLES30.glLineWidth(10.0f);
 //
-        commonProgram = GLES30.glCreateProgram();
-        instancedProgram = GLES30.glCreateProgram();
         String vertexShaderCode = Utils.readRawTextFile(context, R.raw.vertex_shader);
         String fragmentShaderCode = Utils.readRawTextFile(context, R.raw.fragment_shader);
-        String instancedVertexShaderCode = Utils.readRawTextFile(context, R.raw.instanced_vertex_shader);
-        initProgram(commonProgram, vertexShaderCode, fragmentShaderCode);
-        initProgram(instancedProgram, instancedVertexShaderCode, fragmentShaderCode);
         program = new Program(vertexShaderCode, fragmentShaderCode);
 
         Random random = new Random();
         cubes = new Cube[10];
         lines = new Line[NUM_OF_LINES];
         for(int i=0; i<cubes.length; i++){
-            cubes[i] = new Cube(commonProgram, context);
+            cubes[i] = new Cube(context);
             cubes[i].setTranslation(
                 new float[] {
                     2 * random.nextFloat() - 1f,
@@ -90,11 +85,11 @@ public class CollisionDetectionRenderer extends BaseRenderer {
                 2 * random.nextFloat() - 1f,
                 2 * random.nextFloat() - 1f,
             };
-            lines[i] = new Line(source, direction, defaultLineLength, commonProgram, context);
+            lines[i] = new Line(source, direction, defaultLineLength, context);
         }
         triangles = new ArrayList<>();
         for(int i=0; i<NUM_OF_TRIANGLES; i++){
-            Triangle triangle = new Triangle(commonProgram, context);
+            Triangle triangle = new Triangle(context);
             float[] translation = MatrixUtils.add(
                 MatrixUtils.mul(
                     MatrixUtils.generateRandomVector(3),
@@ -108,8 +103,8 @@ public class CollisionDetectionRenderer extends BaseRenderer {
             triangle.setScale(scale);
             triangles.add(triangle);
         }
-//        grid = new Grid(triangles);
-//        kdtree = new KDTree(triangles);
+        grid = new Grid(triangles);
+        kdtree = new KDTree(triangles);
 
 //        testCollisionDetection();
     }
@@ -129,8 +124,7 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         Matrix.setLookAtM(viewMatrix, 0, eye[0], eye[1], eye[2], 0f, 0f, 0f, 0f, 1.0f, 0.0f);
         Matrix.multiplyMM(vpMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
         Matrix.setRotateM(rotationMatrix, 0, mAngle, 0f, 1.0f, 0.0f);
-        GLES30.glUseProgram(commonProgram);
-
+        GLES30.glUseProgram(program.program);
         for(Line l : lines){
             program.draw(l);
         }
@@ -143,10 +137,10 @@ public class CollisionDetectionRenderer extends BaseRenderer {
                 List<float[][]> intersectionList = triangles.get(i).getIntersectionsWithLine(line);
                 for (float[][] intersections : intersectionList) {
                     if (intersections.length == 1) {
-                        Point p = new Point(intersections[0], commonProgram, context);
+                        Point p = new Point(intersections[0], context);
                         program.draw(p);
                     } else if (intersections.length == 2) {
-                        Line l = new Line(intersections[0], intersections[1], commonProgram, context);
+                        Line l = new Line(intersections[0], intersections[1], context);
                         program.draw(l);
                     }
                 }
@@ -159,11 +153,11 @@ public class CollisionDetectionRenderer extends BaseRenderer {
             List<float[][]> intersectionList = grid.getIntersectionWithLine(line);
             for(float[][] intersections : intersectionList){
                 if(intersections.length == 1){
-                    Point p = new Point(intersections[0], commonProgram, context);
+                    Point p = new Point(intersections[0], context);
 //                    program.draw(p);
                 }
                 else if(intersections.length == 2){
-                    Line l = new Line(intersections[0], intersections[1], commonProgram, context);
+                    Line l = new Line(intersections[0], intersections[1], context);
 //                    program.draw(l);
                 }
             }
@@ -175,11 +169,11 @@ public class CollisionDetectionRenderer extends BaseRenderer {
             List<float[][]> intersectionList = kdtree.getIntersectionWithLine(line);
             for(float[][] intersections : intersectionList){
                 if(intersections.length == 1){
-                    Point p = new Point(intersections[0], commonProgram, context);
+                    Point p = new Point(intersections[0], context);
 //                    program.draw(p);
                 }
                 else if(intersections.length == 2){
-                    Line l = new Line(intersections[0], intersections[1], defaultLineLength, commonProgram, context);
+                    Line l = new Line(intersections[0], intersections[1], defaultLineLength, context);
 //                    program.draw(l);
                 }
             }

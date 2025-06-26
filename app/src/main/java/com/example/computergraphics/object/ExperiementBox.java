@@ -14,7 +14,7 @@ import java.util.List;
 public class ExperiementBox extends GraphicObject {
     BBox bbox;
     public ExperiementBox(float[] min, float[] max, Context context){
-        super(null, null, null, -1, context);
+        super(null, null, null, context);
         bbox = new BBox(min, max);
         vertexData = new float[] {min[0], min[1], min[2], max[0], max[1], max[2]};
     }

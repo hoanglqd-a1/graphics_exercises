@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GraphicObject {
-    public int program;
     public Context context;
     static final public int COORDS_PER_VERTEX = 3;
     static final public int COORDS_PER_NORMAL = 3;
@@ -47,18 +46,16 @@ public class GraphicObject {
     public final int textureCoordinateDataSize = 2;
     public final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     public final int normalStride = COORDS_PER_VERTEX * 4;
-    public GraphicObject(float [] vertexData, float [] normalData, float [] textureCoordinateData, int program, Context context){
+    public GraphicObject(float [] vertexData, float [] normalData, float [] textureCoordinateData, Context context){
         this.vertexData = vertexData;
         this.normalData = normalData;
         this.textureCoordinateData = textureCoordinateData;
-        this.program = program;
         this.context = context;
         this.mtl = new MaterialFileHandle("default");
         this.createBuffer();
     }
     public GraphicObject(InputStream objInputStream, Context context) {
         this.context = context;
-        this.program = GLES30.glCreateProgram();
         BufferedReader reader = new BufferedReader(new InputStreamReader(objInputStream));
         List<Float> vertices = new ArrayList<>();
         List<Float> textures = new ArrayList<>();
@@ -160,7 +157,6 @@ public class GraphicObject {
         this.textureCoordinateData = createData(textureCoords, textureOrder, 2);
         this.normalData = createData(normalCoords, normalOrder, 3);
         this.createBuffer();
-//        this.initProgram();
     }
     public void createBuffer() {
         if (this.vertexData != null) {
@@ -272,87 +268,6 @@ public class GraphicObject {
         }
         return curr;
     }
-    public void draw(float[] vMatrix, float[] pMatrix, float[] worldRotationMatrix, float[] eye) {
-        int mvpMatrixHandle = GLES30.glGetUniformLocation(program, "uMVPMatrix");
-        int mvMatrixHandle = GLES30.glGetUniformLocation(program, "uMVMatrix");
-        int useTexture = GLES30.glGetUniformLocation(program, "uUseTexture");
-        int useNormal = GLES30.glGetUniformLocation(program, "uUseNormal");
-        int textureUniformHandle = GLES30.glGetUniformLocation(program, "uTexture");
-        int colorHandle = GLES30.glGetUniformLocation(program, "uColor");
-        int lightPositionHandle = GLES30.glGetUniformLocation(program, "uLightPosition");
-        int viewPositionHandle = GLES30.glGetUniformLocation(program, "uViewPosition");
-        int ambientHandle = GLES30.glGetUniformLocation(program, "Ka");
-        int diffuseHandle = GLES30.glGetUniformLocation(program, "Kd");
-        int specularHandle = GLES30.glGetUniformLocation(program, "Ks");
-
-        int positionHandle = GLES30.glGetAttribLocation(program, "aPosition");
-        int normalHandle = GLES30.glGetAttribLocation(program, "aNormal");
-        int textureCoordinateHandle = GLES30.glGetAttribLocation(program, "aTextureCoordinate");
-
-        // Enable a handle to the triangle vertices
-        GLES30.glEnableVertexAttribArray(positionHandle);
-
-        // Prepare the triangle coordinate data
-        GLES30.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX,
-                GLES30.GL_FLOAT, false,
-                vertexStride, vertexBuffer);
-
-        // Set color for drawing the triangle
-        GLES30.glUniform4fv(colorHandle, 1, color, 0);
-        modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
-        Matrix.multiplyMM(modelMatrix, 0, worldRotationMatrix, 0, modelMatrix, 0);
-        float [] vpMatrix = new float[16];
-        Matrix.multiplyMM(vpMatrix, 0, pMatrix, 0, vMatrix, 0);
-        float [] mvpMatrix = new float[16];
-        Matrix.multiplyMM(mvpMatrix, 0, vpMatrix, 0, modelMatrix, 0);
-
-        // Pass the projection and view transformation to the shader
-        GLES30.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix, 0);
-
-        float [] mvMatrix = new float[16];
-        Matrix.multiplyMM(mvMatrix, 0, vMatrix, 0, modelMatrix, 0);
-        GLES30.glUniformMatrix4fv(mvMatrixHandle, 1, false, mvMatrix, 0);
-
-        int textureHandle = mtl.textureHandle;
-        GLES30.glUniform1i(useTexture, 0);
-        if (this.textureCoordinateBuffer != null && textureCoordinateHandle >= 0) {
-            GLES30.glEnableVertexAttribArray(textureCoordinateHandle);
-            GLES30.glUniform1i(useTexture, 1);
-            GLES30.glVertexAttribPointer(
-                textureCoordinateHandle,
-                textureCoordinateDataSize,
-                GLES30.GL_FLOAT,
-                false,
-                0,
-                textureCoordinateBuffer
-            );
-            GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureHandle);
-            GLES30.glUniform1i(textureUniformHandle, 0);
-        }
-
-        if (this.lightPositionData != null && lightPositionHandle >= 0){
-            GLES30.glUniform3fv(lightPositionHandle, 1, this.lightPositionData, 0);
-        }
-
-        GLES30.glUniform3fv(viewPositionHandle, 1, eye, 0);
-
-        GLES30.glUniform3fv(ambientHandle, 1, mtl.Ka, 0);
-        GLES30.glUniform3fv(diffuseHandle, 1, mtl.Kd, 0);
-        GLES30.glUniform3fv(specularHandle, 1, mtl.Ks, 0);
-
-        if (this.normalBuffer != null && normalHandle >= 0){
-            GLES30.glUniform1i(useNormal, 1);
-            GLES30.glEnableVertexAttribArray(normalHandle);
-            GLES30.glVertexAttribPointer(normalHandle, COORDS_PER_NORMAL,
-                GLES30.GL_FLOAT, false,
-                normalStride, normalBuffer);
-        }
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, vertexData.length / COORDS_PER_VERTEX);
-
-        // Disable vertex array
-        GLES30.glDisableVertexAttribArray(positionHandle);
-    }
     public List<float[][]> getIntersectionsWithLine(Line line){
         List<float[][]> intersections = new ArrayList<>();
         float [] worldVertices = getWorldVertices();
@@ -369,9 +284,9 @@ public class GraphicObject {
             float D = - MatrixUtils.MM(normal, v0);
             float NR = MatrixUtils.MM(normal, line.direction);
             if (Math.abs(NR) < 1e-6){
-                Line l0 = new Line(v1, v2, GLES30.glCreateProgram(), context);
-                Line l1 = new Line(v2, v0, GLES30.glCreateProgram(), context);
-                Line l2 = new Line(v0, v1, GLES30.glCreateProgram(), context);
+                Line l0 = new Line(v1, v2, context);
+                Line l1 = new Line(v2, v0, context);
+                Line l2 = new Line(v0, v1, context);
                 float [] p0 = line.getIntersectionWithLine(l0);
                 float [] p1 = line.getIntersectionWithLine(l1);
                 float [] p2 = line.getIntersectionWithLine(l2);

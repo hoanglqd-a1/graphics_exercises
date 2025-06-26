@@ -35,8 +35,8 @@ public class MatrixUtils {
         return new float [] {v1[1]*v2[2] - v1[2]*v2[1], v1[2]*v2[0] - v1[0]*v2[2], v1[0]*v2[1] - v1[1]*v2[0]};
     }
     public static float[] normalize(float[] v) {
-        float mag = (float)Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-        return new float[]{ v[0]/mag, v[1]/mag, v[2]/mag };
+        float norm = (float)Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+        return new float[]{ v[0]/norm, v[1]/norm, v[2]/norm };
     }
     public static float norm(float[] v){
         return (float)Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);

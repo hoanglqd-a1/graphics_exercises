@@ -13,10 +13,10 @@ public class Triangle extends GraphicObject{
             0f, 0f, 1f,
             0f, 0f, 1f,
     };
-    public Triangle(float[] vertexData, float[] normalData, float[] textureCoordinateData, int program, Context context) {
-        super(vertexData, normalData, textureCoordinateData, program, context);
+    public Triangle(float[] vertexData, float[] normalData, float[] textureCoordinateData, Context context) {
+        super(vertexData, normalData, textureCoordinateData, context);
     }
-    public Triangle(int program, Context context){
-        this(defaultVertexData, defaultNormalData, null, program, context);
+    public Triangle(Context context){
+        this(defaultVertexData, defaultNormalData, null, context);
     }
 }
