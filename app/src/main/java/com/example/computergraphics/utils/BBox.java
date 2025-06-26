@@ -1,11 +1,11 @@
-package com.example.computergraphics.CollisionDetection;
+package com.example.computergraphics.utils;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class BBox {
-    float[] lower;
-    float[] upper;
+    public float[] lower;
+    public float[] upper;
     public BBox(){
         this.lower = new float[] {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
         this.upper = new float[] {- Float.MAX_VALUE, - Float.MAX_VALUE, - Float.MAX_VALUE};

@@ -9,9 +9,7 @@ import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.example.computergraphics.R;
 import com.example.computergraphics.utils.MaterialFileHandle;
-import com.example.computergraphics.renderer.MyGLRenderer;
 import com.example.computergraphics.utils.MatrixUtils;
 import com.example.computergraphics.utils.Utils;
 
@@ -26,40 +24,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GraphicObject {
-    protected int program;
-    protected Context context;
+    public int program;
+    public Context context;
     static final public int COORDS_PER_VERTEX = 3;
     static final public int COORDS_PER_NORMAL = 3;
-    protected float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 1.0f };
-    public static float defaultVertexData [] = {   // in counterclockwise order:
-        0.0f,  0.622008459f, 0.0f, // top
-        -0.5f, -0.311004243f, 0.0f, // bottom left
-        0.5f, -0.311004243f, 0.0f,  // bottom right
-    };
-    public static float defaultNormalData [] = {
-        0f, 0f, 1f,
-        0f, 0f, 1f,
-        0f, 0f, 1f,
-    };
-    protected float vertexData [];
-    protected float normalData [];
-    protected float lightPositionData [] = {0.0f, 0.0f, 0.75f, 1.0f};
-    protected float textureCoordinateData [];
-    protected FloatBuffer vertexBuffer;
-    protected FloatBuffer normalBuffer;
-    protected FloatBuffer textureCoordinateBuffer;
+    public float[] color = { 0.63671875f, 0.76953125f, 0.22265625f, 1.0f };
+    public float vertexData [];
+    public float normalData [];
+    public float lightPositionData [] = {0.0f, 0.0f, 0.75f, 1.0f};
+    public float textureCoordinateData [];
+    public FloatBuffer vertexBuffer;
+    public FloatBuffer normalBuffer;
+    public FloatBuffer textureCoordinateBuffer;
     public boolean isIntersected = false;
     public int id = -1;
-    protected float translation [] = { 0.0f, 0.0f, 0.0f};
-    protected float rotation [] = { 0.0f, 0.0f, 0.0f};
-    protected float scale [] = { 1.0f, 1.0f, 1.0f };
-    protected float modelMatrix [] = new float[16];
+    public float translation [] = { 0.0f, 0.0f, 0.0f};
+    public float rotation [] = { 0.0f, 0.0f, 0.0f};
+    public float scale [] = { 1.0f, 1.0f, 1.0f };
+    public float modelMatrix [] = new float[16];
 
-    protected MaterialFileHandle mtl;
-    protected final int textureCoordinateDataSize = 2;
-    protected final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
-    protected final int normalStride = COORDS_PER_VERTEX * 4;
-    public final int typ = 2;
+    public MaterialFileHandle mtl;
+    public final int textureCoordinateDataSize = 2;
+    public final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
+    public final int normalStride = COORDS_PER_VERTEX * 4;
     public GraphicObject(float [] vertexData, float [] normalData, float [] textureCoordinateData, int program, Context context){
         this.vertexData = vertexData;
         this.normalData = normalData;
@@ -68,11 +55,6 @@ public class GraphicObject {
         this.context = context;
         this.mtl = new MaterialFileHandle("default");
         this.createBuffer();
-//        this.initProgram();
-    }
-    public GraphicObject(int program, Context context) {
-        this(defaultVertexData, defaultNormalData, null,
-                program, context);
     }
     public GraphicObject(InputStream objInputStream, Context context) {
         this.context = context;
@@ -180,7 +162,7 @@ public class GraphicObject {
         this.createBuffer();
 //        this.initProgram();
     }
-    protected void createBuffer() {
+    public void createBuffer() {
         if (this.vertexData != null) {
             this.vertexBuffer = toBuffer(this.vertexData);
         }
@@ -213,18 +195,6 @@ public class GraphicObject {
         }
         return data;
     }
-    protected void initProgram() {
-        String vertexShaderCode = Utils.readRawTextFile(context, R.raw.vertex_shader);
-        String fragmentShaderCode = Utils.readRawTextFile(context, R.raw.fragment_shader);
-        int vertexShader = MyGLRenderer.loadShader(GLES30.GL_VERTEX_SHADER,
-                vertexShaderCode);
-        int fragmentShader = MyGLRenderer.loadShader(GLES30.GL_FRAGMENT_SHADER,
-                fragmentShaderCode);
-        // create empty OpenGL ES Program
-        GLES30.glAttachShader(this.program, vertexShader);
-        GLES30.glAttachShader(this.program, fragmentShader);
-        GLES30.glLinkProgram(this.program);
-    }
     public static int loadTexture(final Context context, final int resourceId) {
         final int[] textureHandle = new int[1];
         GLES30.glGenTextures(1, textureHandle, 0);
@@ -251,7 +221,7 @@ public class GraphicObject {
         }
         return textureHandle[0];
     }
-    protected MaterialFileHandle readMaterialFile (InputStream mtlFile){
+    public MaterialFileHandle readMaterialFile (InputStream mtlFile){
         BufferedReader reader = new BufferedReader(new InputStreamReader(mtlFile));
         // HashMap<String, Material> mtls = new HashMap<>();
         MaterialFileHandle curr = null;
@@ -303,17 +273,6 @@ public class GraphicObject {
         return curr;
     }
     public void draw(float[] vMatrix, float[] pMatrix, float[] worldRotationMatrix, float[] eye) {
-        // Add program to OpenGL ES environment
-        GLES30.glUseProgram(program);
-
-        int[] linkStatus = new int[1];
-        GLES30.glGetProgramiv(program, GLES30.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] == 0) {
-            // Linking failed
-            Log.e("Shader", "Program linking failed.");
-            Log.e("Shader", GLES30.glGetProgramInfoLog(program));
-        }
-
         int mvpMatrixHandle = GLES30.glGetUniformLocation(program, "uMVPMatrix");
         int mvMatrixHandle = GLES30.glGetUniformLocation(program, "uMVMatrix");
         int useTexture = GLES30.glGetUniformLocation(program, "uUseTexture");
@@ -472,5 +431,8 @@ public class GraphicObject {
             System.arraycopy(vertex, 0, worldVertices, i, 3);
         }
         return worldVertices;
+    }
+    public float[] getColor() {
+        return color;
     }
 }

@@ -1,20 +1,15 @@
 package com.example.computergraphics.test_spatial_structure;
 
 import android.content.Context;
-import android.opengl.GLES30;
 import android.util.Log;
 
-import androidx.compose.material3.FabPlacement;
-
 import com.example.computergraphics.CollisionDetection.*;
-import com.example.computergraphics.object.Cube;
 import com.example.computergraphics.object.ExperiementBox;
 import com.example.computergraphics.object.GraphicObject;
 import com.example.computergraphics.object.Line;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

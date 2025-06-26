@@ -4,7 +4,7 @@ import android.content.Context;
 import android.opengl.GLES30;
 import android.util.Log;
 
-import com.example.computergraphics.renderer.MyGLRenderer;
+import com.example.computergraphics.renderer.CollisionDetectionRenderer;
 import com.example.computergraphics.R;
 import com.example.computergraphics.utils.Utils;
 
@@ -33,21 +33,12 @@ public class GroupedObjects extends GraphicObject{
                 null, GLES30.GL_DYNAMIC_DRAW); // Use DYNAMIC_DRAW as data will change
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0); // Unbind
     }
-    public GroupedObjects(Context context, int copies, float[] instancedModelMatrices){
-        this(defaultVertexData,
-            defaultNormalData,
-            null,
-            GLES30.glCreateProgram(),
-            context,
-            copies,
-            instancedModelMatrices);
-    }
     protected void initProgram() {
         String vertexShaderCode = Utils.readRawTextFile(context, R.raw.instanced_vertex_shader);
         String fragmentShaderCode = Utils.readRawTextFile(context, R.raw.fragment_shader);
-        int vertexShader = MyGLRenderer.loadShader(GLES30.GL_VERTEX_SHADER,
+        int vertexShader = CollisionDetectionRenderer.loadShader(GLES30.GL_VERTEX_SHADER,
                 vertexShaderCode);
-        int fragmentShader = MyGLRenderer.loadShader(GLES30.GL_FRAGMENT_SHADER,
+        int fragmentShader = CollisionDetectionRenderer.loadShader(GLES30.GL_FRAGMENT_SHADER,
                 fragmentShaderCode);
         // create empty OpenGL ES Program
         GLES30.glAttachShader(this.program, vertexShader);

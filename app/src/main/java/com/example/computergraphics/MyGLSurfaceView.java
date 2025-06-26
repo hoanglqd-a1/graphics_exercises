@@ -4,10 +4,10 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
 
-import com.example.computergraphics.renderer.MyGLRenderer;
+import com.example.computergraphics.renderer.CollisionDetectionRenderer;
 
 public class MyGLSurfaceView extends GLSurfaceView {
-    private final MyGLRenderer renderer;
+    private final CollisionDetectionRenderer renderer;
     private float previousX;
     private float previousY;
 
@@ -17,7 +17,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
         // Create an OpenGL ES 3.0 context
         setEGLContextClientVersion(3);
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-        renderer = new MyGLRenderer(source, direction, context);
+        renderer = new CollisionDetectionRenderer(source, direction, context);
 
         setRenderer(renderer);
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
