@@ -47,4 +47,14 @@ public class Utils {
         if (union[0] > union[1]) return null;
         return union;
     }
+    public static float[] getBarycentricCoordinate (float [][] ABC, float [] P){
+        float [] AB = MatrixUtils.sub(ABC[1], ABC[0]);
+        float [] AC = MatrixUtils.sub(ABC[2], ABC[0]);
+        float [] AP = MatrixUtils.sub(P, ABC[0]);
+        float SABC = 0.5f * MatrixUtils.norm(MatrixUtils.crossProduct(AB, AC));
+        float SABP = 0.5f * MatrixUtils.norm(MatrixUtils.crossProduct(AB, AP));
+        float SACP = 0.5f * MatrixUtils.norm(MatrixUtils.crossProduct(AC, AP));
+        float SBCP = SABC - SABP - SACP;
+        return new float [] {SBCP / SABC, SACP / SABC, SABP / SABC};
+    }
 }

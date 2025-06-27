@@ -19,7 +19,7 @@ public class Cube extends GraphicObject {
             -0.5f, -0.5f,  -0.5f,   // bottom left back
             0.5f, -0.5f,  -0.5f,   // bottom right back
             0.5f,  0.5f,  -0.5f }; // top right back
-    static short defaultDrawOrder[] = {
+    static int defaultDrawOrder[] = {
             0, 1, 2, 0, 2, 3, // front face
             4, 7, 6, 4, 6, 5, // back face
             0, 4, 5, 0, 5, 1, // left face

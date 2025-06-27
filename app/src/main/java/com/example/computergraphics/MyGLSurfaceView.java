@@ -12,15 +12,14 @@ public class MyGLSurfaceView extends GLSurfaceView {
     private final BaseRenderer renderer;
     private float previousX;
     private float previousY;
-
     public MyGLSurfaceView(float [] source, float [] direction, Context context){
         super(context);
 
         // Create an OpenGL ES 3.0 context
         setEGLContextClientVersion(3);
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-//        renderer = new CollisionDetectionRenderer(source, direction, context);
-        renderer = new BasicRayTracingRenderer(context);
+        renderer = new CollisionDetectionRenderer(source, direction, context);
+//        renderer = new BasicRayTracingRenderer(context);
 
         setRenderer(renderer);
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);

@@ -159,15 +159,15 @@ public class Grid {
         }
         return objectsSet;
     }
-    public List<float[][]> getIntersectionWithLine(Line l){
-        List<float[][]> intersections = new ArrayList<>();
+    public List<GraphicObject.Intersection> getIntersectionWithLine(Line l){
+        List<GraphicObject.Intersection> intersections = new ArrayList<>();
         Set<List<Integer>> intersectedVoxel = this.traverse(l);
 //        Log.d("Object count", "Resolution " + Arrays.toString(resolution));
 //        Log.d("Object count", "Number of intersected voxels: " + intersectedVoxel.size());
         Set<GraphicObject> intersectedObjects = this.getIntersectedObjectSet(intersectedVoxel);
 //        Log.d("Object count", "Number of intersected objects: " + intersectedObjects.size());
         for(GraphicObject obj: intersectedObjects){
-            List<float[][]> intersectionsWithLinePerObject = obj.getIntersectionsWithLine(l);
+            List<GraphicObject.Intersection> intersectionsWithLinePerObject = obj.getIntersectionsWithLine(l);
             intersections.addAll(intersectionsWithLinePerObject);
         }
         return intersections;

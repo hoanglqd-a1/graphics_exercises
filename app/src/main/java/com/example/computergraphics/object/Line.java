@@ -48,11 +48,11 @@ public class Line extends GraphicObject {
         float [] d1 = direction;
         float [] d2 = line.direction;
         float [] r = MatrixUtils.sub(s1, s2);
-        float a = MatrixUtils.MM(d1, d1);
-        float b = MatrixUtils.MM(d1, d2);
-        float c = MatrixUtils.MM(d2, d2);
-        float d = MatrixUtils.MM(d1, r);
-        float e = MatrixUtils.MM(d2, r);
+        float a = MatrixUtils.dot(d1, d1);
+        float b = MatrixUtils.dot(d1, d2);
+        float c = MatrixUtils.dot(d2, d2);
+        float d = MatrixUtils.dot(d1, r);
+        float e = MatrixUtils.dot(d2, r);
         float denom = a*c - b*b;
         if (Math.abs(denom) < 1e-6){
             return null;

@@ -65,11 +65,6 @@ public class BasicRayTracingRenderer extends BaseRenderer {
         Matrix.setRotateM(rotationMatrix, 0, mAngle, 0f, 1.0f, 0.0f);
 
         program.useProgram();
-        for(int i=0; i<lines.length; i++){
-            lines[i].setTranslation(new float[] {0f, 0f, -4f});
-            if (i % 78 != 0) continue;
-            program.draw(lines[i]);
-        }
     }
     public void createRayTracing(){
         final int downScaledWidth = this.width / 8;
@@ -82,8 +77,8 @@ public class BasicRayTracingRenderer extends BaseRenderer {
         float tanFov = (float) Math.tan(Math.toRadians(fov * 0.5));
         for(int i=0; i<downScaledWidth; i++){
             for(int j=0; j<downScaledHeight; j++){
-                float ndc_i = (float) (i+0.5) / downScaledWidth;
-                float ndc_j = (float) (j+0.5) / downScaledHeight;
+                float ndc_i = (float) (i + 0.5) / downScaledWidth;
+                float ndc_j = (float) (j + 0.5) / downScaledHeight;
                 float screen_i = 2 * ndc_i - 1;
                 float screen_j = 2 * ndc_j - 1;
                 float[] rayDirecion = MatrixUtils.add(

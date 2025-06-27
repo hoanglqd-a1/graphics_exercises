@@ -48,12 +48,12 @@ public class InstancedObjectRenderer implements GLSurfaceView.Renderer {
         for(int i=0; i<COPIES; i++){
             float[] translation = MatrixUtils.add(
                 MatrixUtils.mul(
-                    MatrixUtils.generateRandomVector(3),
+                    MatrixUtils.randomVector(3),
                     2
                 ), new float[] {-1f, -1f, -1f}
             );
             float[] scale = new float[] {0.1f, 0.1f, 0.1f};
-            float[] rotation = MatrixUtils.mul(MatrixUtils.generateRandomVector(3), 360f);
+            float[] rotation = MatrixUtils.mul(MatrixUtils.randomVector(3), 360f);
             float[] modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
             System.arraycopy(modelMatrix, 0, instancedModelMatrices, i * 16, 16);
         }

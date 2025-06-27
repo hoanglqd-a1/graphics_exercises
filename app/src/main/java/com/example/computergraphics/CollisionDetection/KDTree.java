@@ -88,8 +88,8 @@ public class KDTree {
 //        Log.d("KDTree", "Number of intersected Objects: " + intersectedObjects.size());
         return intersectedObjects;
     }
-    public List<float[][]> getIntersectionWithLine(Line l){
-        List<float[][]> intersections = new ArrayList<>();
+    public List<GraphicObject.Intersection> getIntersectionWithLine(Line l){
+        List<GraphicObject.Intersection> intersections = new ArrayList<>();
         float[] source = l.getWorldSource();
         float[] direction = l.getWorldDirection();
         Set<GraphicObject> intersectedObjects = traverse(rootNode, source, direction);

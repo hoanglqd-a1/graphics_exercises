@@ -2,12 +2,16 @@ package com.example.computergraphics.renderer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
+import android.content.res.AssetManager;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.content.Context;
 import android.util.Log;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -61,6 +65,15 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         String fragmentShaderCode = Utils.readRawTextFile(context, R.raw.fragment_shader);
         program = new Program(vertexShaderCode, fragmentShaderCode);
 
+        InputStream inputStream = null;
+        try {
+            AssetManager assetManager = context.getAssets();
+            inputStream = assetManager.open("pokeball.obj");
+            model = new GraphicObject(inputStream, context);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         Random random = new Random();
         cubes = new Cube[10];
         lines = new Line[NUM_OF_LINES];
@@ -92,12 +105,12 @@ public class CollisionDetectionRenderer extends BaseRenderer {
             Triangle triangle = new Triangle(context);
             float[] translation = MatrixUtils.add(
                 MatrixUtils.mul(
-                    MatrixUtils.generateRandomVector(3),
+                    MatrixUtils.randomVector(3),
                     4
                 ), new float[] {-2f, -2f, -2f}
             );
             float[] scale = new float[] {1f, 1f, 1f};
-            float[] rotation = MatrixUtils.mul(MatrixUtils.generateRandomVector(3), 360f);
+            float[] rotation = MatrixUtils.mul(MatrixUtils.randomVector(3), 360f);
             triangle.setTranslation(translation);
             triangle.setRotation(rotation);
             triangle.setScale(scale);
@@ -125,6 +138,7 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         Matrix.multiplyMM(vpMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
         Matrix.setRotateM(rotationMatrix, 0, mAngle, 0f, 1.0f, 0.0f);
         GLES30.glUseProgram(program.program);
+
         for(Line l : lines){
             program.draw(l);
         }
@@ -134,13 +148,13 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         long start = System.nanoTime();
         for (Line line : lines) {
             for (int i = 0; i < triangles.size(); i++) {
-                List<float[][]> intersectionList = triangles.get(i).getIntersectionsWithLine(line);
-                for (float[][] intersections : intersectionList) {
-                    if (intersections.length == 1) {
-                        Point p = new Point(intersections[0], context);
+                List<GraphicObject.Intersection> intersectionList = triangles.get(i).getIntersectionsWithLine(line);
+                for (GraphicObject.Intersection intersection : intersectionList) {
+                    if (intersection.point != null) {
+                        Point p = intersection.point;
                         program.draw(p);
-                    } else if (intersections.length == 2) {
-                        Line l = new Line(intersections[0], intersections[1], context);
+                    } else if (intersection.line != null) {
+                        Line l = intersection.line;
                         program.draw(l);
                     }
                 }
@@ -150,14 +164,14 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         naive_total += end - start;
         start = System.nanoTime();
         for(Line line : lines){
-            List<float[][]> intersectionList = grid.getIntersectionWithLine(line);
-            for(float[][] intersections : intersectionList){
-                if(intersections.length == 1){
-                    Point p = new Point(intersections[0], context);
+            List<GraphicObject.Intersection> intersectionList = grid.getIntersectionWithLine(line);
+            for(GraphicObject.Intersection intersection : intersectionList){
+                if(intersection.point != null){
+                    Point p = intersection.point;
 //                    program.draw(p);
                 }
-                else if(intersections.length == 2){
-                    Line l = new Line(intersections[0], intersections[1], context);
+                else if(intersection.line != null){
+                    Line l = intersection.line;
 //                    program.draw(l);
                 }
             }
@@ -166,14 +180,14 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         grid_total += end - start;
         start = System.nanoTime();
         for(Line line: lines){
-            List<float[][]> intersectionList = kdtree.getIntersectionWithLine(line);
-            for(float[][] intersections : intersectionList){
-                if(intersections.length == 1){
-                    Point p = new Point(intersections[0], context);
+            List<GraphicObject.Intersection> intersectionList = kdtree.getIntersectionWithLine(line);
+            for(GraphicObject.Intersection intersection : intersectionList){
+                if(intersection.point != null){
+                    Point p = intersection.point;
 //                    program.draw(p);
                 }
-                else if(intersections.length == 2){
-                    Line l = new Line(intersections[0], intersections[1], defaultLineLength, context);
+                else if(intersection.line != null){
+                    Line l = intersection.line;
 //                    program.draw(l);
                 }
             }

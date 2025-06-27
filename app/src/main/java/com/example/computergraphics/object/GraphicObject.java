@@ -60,9 +60,9 @@ public class GraphicObject {
         List<Float> vertices = new ArrayList<>();
         List<Float> textures = new ArrayList<>();
         List<Float> normals = new ArrayList<>();
-        List<Short> vfaces = new ArrayList<>();
-        List<Short> tfaces = new ArrayList<>();
-        List<Short> nfaces = new ArrayList<>();
+        List<Integer> vfaces = new ArrayList<>();
+        List<Integer> tfaces = new ArrayList<>();
+        List<Integer> nfaces = new ArrayList<>();
         String line;
         while (true){
             try {
@@ -72,14 +72,14 @@ public class GraphicObject {
             }
             String[] tokens = line.split(" ");
             if (tokens[0].equals("mtllib")){
-                AssetManager assetManager = this.context.getAssets();
-                InputStream mtlfile;
-                try {
-                    mtlfile = assetManager.open(tokens[1]);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                this.mtl = this.readMaterialFile(mtlfile);
+//                AssetManager assetManager = this.context.getAssets();
+//                InputStream mtlfile;
+//                try {
+//                    mtlfile = assetManager.open(tokens[1]);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                this.mtl = this.readMaterialFile(mtlfile);
             }
             if (tokens[0].equals("v")){
                 vertices.add(Float.parseFloat(tokens[1]));
@@ -101,18 +101,18 @@ public class GraphicObject {
                 for (int i = 2; i < verticesCount - 1; i++){
                     String [] token2 = tokens[i].split("/");
                     String [] token3 = tokens[i+1].split("/");
-                    vfaces.add((short) (Integer.parseInt(token1[0]) - 1));
-                    vfaces.add((short) (Integer.parseInt(token2[0]) - 1));
-                    vfaces.add((short) (Integer.parseInt(token3[0]) - 1));
+                    vfaces.add((int) (Integer.parseInt(token1[0]) - 1));
+                    vfaces.add((int) (Integer.parseInt(token2[0]) - 1));
+                    vfaces.add((int) (Integer.parseInt(token3[0]) - 1));
                     if (token1.length >= 2 && token1[1] != ""){
-                        tfaces.add((short) (Integer.parseInt(token1[1]) - 1));
-                        tfaces.add((short) (Integer.parseInt(token2[1]) - 1));
-                        tfaces.add((short) (Integer.parseInt(token3[1]) - 1));
+                        tfaces.add((int) (Integer.parseInt(token1[1]) - 1));
+                        tfaces.add((int) (Integer.parseInt(token2[1]) - 1));
+                        tfaces.add((int) (Integer.parseInt(token3[1]) - 1));
                     }
                     if (token1.length == 3 && token1[1] != ""){
-                        nfaces.add((short) (Integer.parseInt(token1[2]) - 1));
-                        nfaces.add((short) (Integer.parseInt(token2[2]) - 1));
-                        nfaces.add((short) (Integer.parseInt(token3[2]) - 1));
+                        nfaces.add((int) (Integer.parseInt(token1[2]) - 1));
+                        nfaces.add((int) (Integer.parseInt(token2[2]) - 1));
+                        nfaces.add((int) (Integer.parseInt(token3[2]) - 1));
                     }
                 }
             }
@@ -129,11 +129,11 @@ public class GraphicObject {
             this.mtl = new MaterialFileHandle("default");
         }
         float [] modelCoords = new float[vertices.size()];
-        short [] drawOrder = new short[vfaces.size()];
-        float textureCoords [] = new float[textures.size()];
-        short textureOrder [] = new short[tfaces.size()];
-        float normalCoords [] = new float [normals.size()];
-        short normalOrder [] = new short[nfaces.size()];
+        int[] drawOrder = new int[vfaces.size()];
+        float[] textureCoords = new float[textures.size()];
+        int[] textureOrder = new int[tfaces.size()];
+        float[] normalCoords = new float [normals.size()];
+        int[] normalOrder = new int[nfaces.size()];
         for (int i=0; i<vertices.size(); ++i){
             modelCoords[i] = vertices.get(i);
         }
@@ -181,10 +181,10 @@ public class GraphicObject {
         buffer.position(0);
         return buffer;
     }
-    static float [] createData (float[] coords, short[] order, int stride) {
+    static float [] createData (float[] coords, int[] order, int stride) {
         float [] data = new float[order.length * stride];
         for (int i = 0; i < order.length; i++){
-            short index = order[i];
+            int index = order[i];
             for (int j = 0; j < stride; j++){
                 data[i * stride + j] = coords[index * stride + j];
             }
@@ -268,21 +268,19 @@ public class GraphicObject {
         }
         return curr;
     }
-    public List<float[][]> getIntersectionsWithLine(Line line){
-        List<float[][]> intersections = new ArrayList<>();
-        float [] worldVertices = getWorldVertices();
+    public List<Intersection> getIntersectionsWithLine(Line line){
+        List<Intersection> intersections = new ArrayList<>();
+        float[] worldVertices = getWorldVertices();
+        float[] worldNormals = getWorldNormals();
         for (int i=0; i<worldVertices.length; i += 3 * COORDS_PER_VERTEX){
             float [] v0 = {worldVertices[i  ], worldVertices[i+1], worldVertices[i+2]};
             float [] v1 = {worldVertices[i+3], worldVertices[i+4], worldVertices[i+5]};
             float [] v2 = {worldVertices[i+6], worldVertices[i+7], worldVertices[i+8]};
             float [] v0v2temp = MatrixUtils.sub(v2, v0);
             float [] v0v1temp = MatrixUtils.sub(v1, v0);
-            float [] normal = MatrixUtils.normalize(MatrixUtils.crossProduct(v0v1temp, v0v2temp));
-            // Log.d("tag", "v "   + v0[0] + " " + v0[1] + " " + v0[2] + " "
-            //                     + v1[0] + " " + v1[1] + " " + v1[2] + " "
-            //                     + v2[0] + " " + v2[1] + " " + v2[2] + " ");
-            float D = - MatrixUtils.MM(normal, v0);
-            float NR = MatrixUtils.MM(normal, line.direction);
+            float [] geometricNormal = MatrixUtils.normalize(MatrixUtils.crossProduct(v0v1temp, v0v2temp));
+            float D = - MatrixUtils.dot(geometricNormal, v0);
+            float NR = MatrixUtils.dot(geometricNormal, line.direction);
             if (Math.abs(NR) < 1e-6){
                 Line l0 = new Line(v1, v2, context);
                 Line l1 = new Line(v2, v0, context);
@@ -301,12 +299,12 @@ public class GraphicObject {
                     points.add(p2);
                 }
                 if (points.size() != 2) continue;
-                intersections.add(new float[][]{
-                    points.get(0), points.get(1)
-                });
+                intersections.add(new Intersection(
+                    new Line(points.get(0), points.get(1), context)
+                ));
             }
             else {
-                float t = - (MatrixUtils.MM(normal, line.source) + D) / NR;
+                float t = - (MatrixUtils.dot(geometricNormal, line.source) + D) / NR;
                 if (t < 0){
                     continue;
                 }
@@ -317,12 +315,23 @@ public class GraphicObject {
                 float [] v0p = MatrixUtils.sub(p, v0);
                 float [] v1p = MatrixUtils.sub(p, v1);
                 float [] v2p = MatrixUtils.sub(p, v2);
-                float n1 = MatrixUtils.MM(normal, MatrixUtils.crossProduct(v0v1, v0p));
-                float n2 = MatrixUtils.MM(normal, MatrixUtils.crossProduct(v1v2, v1p));
-                float n3 = MatrixUtils.MM(normal, MatrixUtils.crossProduct(v2v0, v2p));
+                float n1 = MatrixUtils.dot(geometricNormal,
+                                MatrixUtils.crossProduct(v0v1, v0p));
+                float n2 = MatrixUtils.dot(geometricNormal,
+                                MatrixUtils.crossProduct(v1v2, v1p));
+                float n3 = MatrixUtils.dot(geometricNormal,
+                                MatrixUtils.crossProduct(v2v0, v2p));
                 if (n1 * n2 >= 0 && n1 * n3 >= 0){
                     isIntersected = true;
-                    intersections.add(new float[][] {p});
+                    float[][] mesh = new float[][] {v0, v1, v2};
+                    float[][] normal = new float[][] {
+                        new float[] {worldNormals[i  ], worldNormals[i+1], worldNormals[i+2]},
+                        new float[] {worldNormals[i+3], worldNormals[i+4], worldNormals[i+5]},
+                        new float[] {worldNormals[i+6], worldNormals[i+7], worldNormals[i+8]},
+                    };
+                    float[] barycentricPosition = Utils.getBarycentricCoordinate(mesh, p);
+                    float[] interpolatedNormal = interpolatedNormal(barycentricPosition, mesh, normal);
+                    intersections.add(new Intersection(new Point(p, context), interpolatedNormal));
                 }
             }
         }
@@ -337,7 +346,7 @@ public class GraphicObject {
     public void setScale(float[] scale){
         this.scale = scale;
     }
-    public float [] getWorldVertices(){
+    public float[] getWorldVertices(){
         float [] modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
         float [] worldVertices = new float[vertexData.length];
         for(int i=0; i<vertexData.length; i+=3){
@@ -347,7 +356,41 @@ public class GraphicObject {
         }
         return worldVertices;
     }
+    public float[] getWorldNormals(){
+        float[] worldNormal = new float[vertexData.length];
+        float[] modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
+        float[] inversedModel = new float[16];
+        Matrix.invertM(inversedModel, 0, modelMatrix, 0);
+        Matrix.transposeM(inversedModel, 0, inversedModel, 0);
+        for(int i=0; i<normalData.length; i+=3){
+            float[] normal = new float[] {normalData[i], normalData[i+1], normalData[i+2], 1};
+            Matrix.multiplyMV(normal, 0, inversedModel, 0, normal, 0);
+            System.arraycopy(normal, 0, worldNormal, i, 3);
+        }
+        return worldNormal;
+    }
     public float[] getColor() {
         return color;
     }
+    public float[] interpolatedNormal(float[] position, float[][] mesh, float[][] normal){
+        float[] barycentricCoordinate = Utils.getBarycentricCoordinate(mesh, position);
+        return MatrixUtils.add(
+            MatrixUtils.mul(normal[0], barycentricCoordinate[0]),
+            MatrixUtils.mul(normal[1], barycentricCoordinate[1]),
+            MatrixUtils.mul(normal[2], barycentricCoordinate[2])
+        );
+    }
+    static public class Intersection{
+        public Point point = null;
+        public Line line = null;
+        public float[] normal = null;
+        Intersection(Point point, float[] normal){
+            this.point = point;
+            this.normal = normal;
+        }
+        Intersection(Line line){
+            this.line = line;
+        }
+    }
 }
+

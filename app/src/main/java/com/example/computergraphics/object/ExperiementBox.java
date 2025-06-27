@@ -18,7 +18,7 @@ public class ExperiementBox extends GraphicObject {
         bbox = new BBox(min, max);
         vertexData = new float[] {min[0], min[1], min[2], max[0], max[1], max[2]};
     }
-    public List<float[][]> getIntersectionsWithLine(Line line){
+    public List<Intersection> getIntersectionsWithLine(Line line){
         float[] source = line.getWorldSource();
         float[] direction = line.getWorldDirection();
         isIntersected = bbox.canIntersectWithLine(source, direction);
