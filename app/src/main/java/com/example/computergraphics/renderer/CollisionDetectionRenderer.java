@@ -151,8 +151,8 @@ public class CollisionDetectionRenderer extends BaseRenderer {
             for (int i = 0; i < triangles.size(); i++) {
                 List<GraphicObject.Intersection> intersectionList = triangles.get(i).getIntersectionsWithLine(line);
                 for (GraphicObject.Intersection intersection : intersectionList) {
-                    if (intersection.coord != null) {
-                        Point p = new Point(intersection.coord, context);
+                    if (intersection.position != null) {
+                        Point p = new Point(intersection.position, context);
                         program.draw(p);
                     } else if (intersection.line != null) {
                         Line l = intersection.line;
@@ -167,8 +167,8 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         for(Line line : lines){
             List<GraphicObject.Intersection> intersectionList = grid.getIntersectionWithLine(line);
             for(GraphicObject.Intersection intersection : intersectionList){
-                if(intersection.coord != null){
-                    Point p = new Point(intersection.coord, context);
+                if(intersection.position != null){
+                    Point p = new Point(intersection.position, context);
 //                    program.draw(p);
                 }
                 else if(intersection.line != null){
@@ -183,8 +183,8 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         for(Line line: lines){
             List<GraphicObject.Intersection> intersectionList = kdtree.getIntersectionWithLine(line);
             for(GraphicObject.Intersection intersection : intersectionList){
-                if(intersection.coord != null){
-                    Point p = new Point(intersection.coord, context);
+                if(intersection.position != null){
+                    Point p = new Point(intersection.position, context);
 //                    program.draw(p);
                 }
                 else if(intersection.line != null){

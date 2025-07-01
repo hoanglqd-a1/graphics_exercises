@@ -391,12 +391,12 @@ public class GraphicObject {
     }
     static public class Intersection{
         public GraphicObject object;
-        public float[] coord = null;
+        public float[] position = null;
         public float[] normal = null;
         public Line line = null;
         Intersection(GraphicObject object, float[] position, float[] normal){
             this.object = object;
-            this.coord = position;
+            this.position = position;
             this.normal = normal;
         }
         Intersection(Line line){

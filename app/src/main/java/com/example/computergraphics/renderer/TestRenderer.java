@@ -76,8 +76,8 @@ public class TestRenderer extends BaseRenderer{
         program.draw(line);
         List<GraphicObject.Intersection> intersections = sphere.getIntersectionsWithLine(line);
         for(GraphicObject.Intersection intersection : intersections){
-            if (intersection.coord != null){
-                program.draw(new Point(intersection.coord, context));
+            if (intersection.position!= null){
+                program.draw(new Point(intersection.position, context));
             }
         }
     }
