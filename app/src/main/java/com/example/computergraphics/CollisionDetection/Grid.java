@@ -81,8 +81,8 @@ public class Grid {
         Set<List<Integer>> voxelIntersectionSet = new HashSet<>();
         List<Integer> start = world2VoxelCoordinate(l.source);
         if(start.get(0) >= 0 && start.get(1) >=0 && start.get(2) >= 0) voxelIntersectionSet.add(start);
-        float[] source = l.getWorldSource();
-        float[] direction = l.getWorldDirection();
+        float[] source = l.getSource();
+        float[] direction = l.getDirection();
         float[][] dist2VoxelIntersectsEachAxis = new float[3][2];
         // Calculate the range of t where the
         // world(lower_bound(voxel[axis])) <= (source + t * direction)[axis] <= world(upper_bound(voxel[axis]))

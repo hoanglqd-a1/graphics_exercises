@@ -90,8 +90,8 @@ public class KDTree {
     }
     public List<GraphicObject.Intersection> getIntersectionWithLine(Line l){
         List<GraphicObject.Intersection> intersections = new ArrayList<>();
-        float[] source = l.getWorldSource();
-        float[] direction = l.getWorldDirection();
+        float[] source = l.getSource();
+        float[] direction = l.getDirection();
         Set<GraphicObject> intersectedObjects = traverse(rootNode, source, direction);
         for(GraphicObject obj: intersectedObjects){
             intersections.addAll(

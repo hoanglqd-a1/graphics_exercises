@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.example.computergraphics.CollisionDetection.*;
-import com.example.computergraphics.object.ExperiementBox;
+import com.example.computergraphics.object.testObject.ExperiementBox;
 import com.example.computergraphics.object.GraphicObject;
 import com.example.computergraphics.object.Line;
 
@@ -74,7 +74,7 @@ public class Unit {
         long start = System.currentTimeMillis();
         for(int i=0; i<lines.size(); i++){
             intersectedObjectsList[i] = new ArrayList<>();
-            Set<GraphicObject> intersectedObjects = kdTree.traverse(kdTree.rootNode, lines.get(i).getWorldSource(), lines.get(i).getWorldDirection());
+            Set<GraphicObject> intersectedObjects = kdTree.traverse(kdTree.rootNode, lines.get(i).getSource(), lines.get(i).getDirection());
             for(GraphicObject obj : intersectedObjects){
                 obj.getIntersectionsWithLine(lines.get(i));
                 if(obj.isIntersected){

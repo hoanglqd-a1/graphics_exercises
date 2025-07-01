@@ -28,24 +28,30 @@ public class GraphicObject {
     static final public int COORDS_PER_VERTEX = 3;
     static final public int COORDS_PER_NORMAL = 3;
     public float[] color = { 0.63671875f, 0.76953125f, 0.22265625f, 1.0f };
-    public float vertexData [];
-    public float normalData [];
-    public float lightPositionData [] = {0.0f, 0.0f, 0.75f, 1.0f};
-    public float textureCoordinateData [];
+    public float[] vertexData ;
+    public float[] normalData ;
+    public float[] lightPositionData;
+    public float[] textureCoordinateData ;
     public FloatBuffer vertexBuffer;
     public FloatBuffer normalBuffer;
     public FloatBuffer textureCoordinateBuffer;
     public boolean isIntersected = false;
     public int id = -1;
-    public float translation [] = { 0.0f, 0.0f, 0.0f};
-    public float rotation [] = { 0.0f, 0.0f, 0.0f};
-    public float scale [] = { 1.0f, 1.0f, 1.0f };
-    public float modelMatrix [] = new float[16];
+    public float[] translation  = { 0.0f, 0.0f, 0.0f};
+    public float[] rotation  = { 0.0f, 0.0f, 0.0f};
+    public float[] scale  = { 1.0f, 1.0f, 1.0f };
+    public float[] modelMatrix  = new float[16];
 
     public MaterialFileHandle mtl;
     public final int textureCoordinateDataSize = 2;
     public final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     public final int normalStride = COORDS_PER_VERTEX * 4;
+    public float[] colorCoefficient = {1f, 0f, 0f};
+    public float refractionIndex = 1.2f;
+    public GraphicObject(Context context){
+        this.context = context;
+        this.mtl = new MaterialFileHandle("default");
+    }
     public GraphicObject(float [] vertexData, float [] normalData, float [] textureCoordinateData, Context context){
         this.vertexData = vertexData;
         this.normalData = normalData;
@@ -305,7 +311,7 @@ public class GraphicObject {
             }
             else {
                 float t = - (MatrixUtils.dot(geometricNormal, line.source) + D) / NR;
-                if (t < 0){
+                if (t < 1e-6){
                     continue;
                 }
                 float [] p = MatrixUtils.add(line.source, MatrixUtils.mul(line.direction, t));
@@ -331,7 +337,7 @@ public class GraphicObject {
                     };
                     float[] barycentricPosition = Utils.getBarycentricCoordinate(mesh, p);
                     float[] interpolatedNormal = interpolatedNormal(barycentricPosition, mesh, normal);
-                    intersections.add(new Intersection(new Point(p, context), interpolatedNormal));
+                    intersections.add(new Intersection(this, p, interpolatedNormal));
                 }
             }
         }
@@ -372,6 +378,9 @@ public class GraphicObject {
     public float[] getColor() {
         return color;
     }
+    public void setColor(float[] color){
+        this.color = color;
+    }
     public float[] interpolatedNormal(float[] position, float[][] mesh, float[][] normal){
         float[] barycentricCoordinate = Utils.getBarycentricCoordinate(mesh, position);
         return MatrixUtils.add(
@@ -381,11 +390,13 @@ public class GraphicObject {
         );
     }
     static public class Intersection{
-        public Point point = null;
-        public Line line = null;
+        public GraphicObject object;
+        public float[] coord = null;
         public float[] normal = null;
-        Intersection(Point point, float[] normal){
-            this.point = point;
+        public Line line = null;
+        Intersection(GraphicObject object, float[] position, float[] normal){
+            this.object = object;
+            this.coord = position;
             this.normal = normal;
         }
         Intersection(Line line){

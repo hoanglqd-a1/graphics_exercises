@@ -1,7 +1,9 @@
-package com.example.computergraphics.object;
+package com.example.computergraphics.object.testObject;
 
 import android.content.Context;
 
+import com.example.computergraphics.object.GraphicObject;
+import com.example.computergraphics.object.Line;
 import com.example.computergraphics.utils.BBox;
 
 import java.util.ArrayList;
@@ -19,8 +21,8 @@ public class ExperiementBox extends GraphicObject {
         vertexData = new float[] {min[0], min[1], min[2], max[0], max[1], max[2]};
     }
     public List<Intersection> getIntersectionsWithLine(Line line){
-        float[] source = line.getWorldSource();
-        float[] direction = line.getWorldDirection();
+        float[] source = line.getSource();
+        float[] direction = line.getDirection();
         isIntersected = bbox.canIntersectWithLine(source, direction);
         return new ArrayList<>();
     }

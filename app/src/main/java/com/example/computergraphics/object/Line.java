@@ -20,7 +20,7 @@ public class Line extends GraphicObject {
     public float [] source;
     public float [] direction;
     public float length;
-    public float [] color = {0f, 0f, 1f, 1f};
+    public float[] color = {0f, 0f, 1f, 1f};
     public Line(float [] source, float [] direction, float length, Context context){
         this(source,
             MatrixUtils.add(source,
@@ -72,13 +72,13 @@ public class Line extends GraphicObject {
         }
         return p1;
     }
-    public float[] getWorldSource(){
+    public float[] getSource(){
         float[] modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
         float[] worldSource = new float[] {source[0], source[1], source[2], 1};
         Matrix.multiplyMV(worldSource, 0, modelMatrix, 0, worldSource, 0);
         return new float[] {worldSource[0], worldSource[1], worldSource[2]};
     }
-    public float[] getWorldDirection(){
+    public float[] getDirection(){
         float[] modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
         float[] worldDirection = new float[] {direction[0], direction[1], direction[2], 1};
         Matrix.multiplyMV(worldDirection, 0, modelMatrix, 0, worldDirection, 0);
@@ -86,6 +86,9 @@ public class Line extends GraphicObject {
     }
     public float[] getColor() {
         return color;
+    }
+    public void setColor(float[] color){
+        this.color = color;
     }
 }
 

@@ -1,5 +1,8 @@
 package com.example.computergraphics.utils;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 import android.opengl.Matrix;
 
 import java.util.Random;
@@ -60,5 +63,29 @@ public class MatrixUtils {
             vector[i] = random.nextFloat();
         }
         return vector;
+    }
+    public static float[] randomVector(int length, float lowRange, float highRange){
+        float[] vector = new float[length];
+        Random random = new Random();
+        for(int i=0; i<length; i++){
+            vector[i] = random.nextFloat() * (highRange - lowRange) + lowRange;
+        }
+        return vector;
+    }
+    static public float[] upperBound(float[] l1, float[] l2){
+        assert (l1.length == l2.length);
+        float[] upper = new float[l1.length];
+        for(int i=0; i<l1.length; i++){
+            upper[i] = max(l1[i], l2[i]);
+        }
+        return upper;
+    }
+    static public float[] lowerBound(float[] l1, float[] l2){
+        assert (l1.length == l2.length);
+        float[] lower = new float[l1.length];
+        for(int i=0; i<l1.length; i++){
+            lower[i] = min(l1[i], l2[i]);
+        }
+        return lower;
     }
 }

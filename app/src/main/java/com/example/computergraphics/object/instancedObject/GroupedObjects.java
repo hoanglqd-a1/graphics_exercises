@@ -1,16 +1,17 @@
-package com.example.computergraphics.object;
+package com.example.computergraphics.object.instancedObject;
 
 import android.content.Context;
 import android.opengl.GLES30;
 import android.util.Log;
 
+import com.example.computergraphics.object.GraphicObject;
 import com.example.computergraphics.renderer.CollisionDetectionRenderer;
 import com.example.computergraphics.R;
 import com.example.computergraphics.utils.Utils;
 
 import java.nio.FloatBuffer;
 
-public class GroupedObjects extends GraphicObject{
+public class GroupedObjects extends GraphicObject {
     private FloatBuffer instanceModelMatrixBuffer;
     private int instanceMatrixBufferId;
     public int copies;

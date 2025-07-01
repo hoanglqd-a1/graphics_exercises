@@ -10,6 +10,7 @@ uniform vec3 Ks;
 uniform float Ns;
 uniform bool uUseTexture;
 uniform bool uUseNormal;
+uniform bool uUseLight;
 
 in vec3 vPosition;
 in vec4 vColor;
@@ -20,13 +21,13 @@ out vec4 fragColor;
 
 void main() {
     fragColor = vColor;
-    if (uUseNormal){
+    if (uUseNormal && uUseLight){
         float distance = length(uLightPosition - vPosition);
         vec3 lightVector = normalize(uLightPosition - vPosition);
         vec3 viewVector = normalize(uViewPosition - vPosition);
         vec3 reflectVector = reflect(-lightVector, vNormal);
         vec3 ambient = Ka;
-        float diff = max(dot(vNormal, lightVector), 0.1);
+        float diff = max(dot(vNormal, lightVector), 0.0);
         vec3 diffuse = Kd * diff;
         float spec = pow(max(dot(viewVector, reflectVector), 0.0), 32.0);
         vec3 specular = Ks * spec;

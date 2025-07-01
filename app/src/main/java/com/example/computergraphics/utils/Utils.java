@@ -57,4 +57,11 @@ public class Utils {
         float SBCP = SABC - SABP - SACP;
         return new float [] {SBCP / SABC, SACP / SABC, SABP / SABC};
     }
+    public static float[] rotateVec3Yaxis(float[] vec3, float angleDegrees) {
+        float[] rotation = new float[16];
+        Matrix.setRotateM(rotation, 0, angleDegrees, 0f, 1f, 0f);
+        float[] tmp = {vec3[0], vec3[1], vec3[2], 1f};
+        Matrix.multiplyMV(tmp, 0, rotation, 0, tmp, 0);
+        return new float[] {tmp[0], tmp[1], tmp[2]};
+    }
 }

@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 import com.example.computergraphics.renderer.BaseRenderer;
 import com.example.computergraphics.renderer.BasicRayTracingRenderer;
 import com.example.computergraphics.renderer.CollisionDetectionRenderer;
+import com.example.computergraphics.renderer.TestRenderer;
 
 public class MyGLSurfaceView extends GLSurfaceView {
     private final BaseRenderer renderer;
@@ -18,11 +19,12 @@ public class MyGLSurfaceView extends GLSurfaceView {
         // Create an OpenGL ES 3.0 context
         setEGLContextClientVersion(3);
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-        renderer = new CollisionDetectionRenderer(source, direction, context);
-//        renderer = new BasicRayTracingRenderer(context);
+//        renderer = new CollisionDetectionRenderer(source, direction, context);
+        renderer = new BasicRayTracingRenderer(context);
+//        renderer = new TestRenderer(context);
 
         setRenderer(renderer);
-        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
    @Override
    public boolean onTouchEvent(MotionEvent e) {
@@ -33,7 +35,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
        float x = e.getX();
        float y = e.getY();
 
-       float TOUCH_SCALE_FACTOR = 180.0f / 320;
+       float TOUCH_SCALE_FACTOR = 180.0f / 1800;
        switch (e.getAction()) {
            case MotionEvent.ACTION_MOVE:
 

@@ -6,7 +6,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
 import com.example.computergraphics.R;
-import com.example.computergraphics.object.GroupedObjects;
+import com.example.computergraphics.object.instancedObject.GroupedObjects;
 import com.example.computergraphics.object.Triangle;
 import com.example.computergraphics.utils.MatrixUtils;
 import com.example.computergraphics.utils.Utils;

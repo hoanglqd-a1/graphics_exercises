@@ -5,7 +5,6 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.content.res.AssetManager;
 import android.opengl.GLES30;
-import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.content.Context;
 import android.util.Log;
@@ -19,6 +18,7 @@ import java.util.Random;
 import com.example.computergraphics.CollisionDetection.Grid;
 import com.example.computergraphics.CollisionDetection.KDTree;
 import com.example.computergraphics.object.*;
+import com.example.computergraphics.object.instancedObject.GroupedObjects;
 import com.example.computergraphics.test_spatial_structure.*;
 import com.example.computergraphics.utils.MatrixUtils;
 import com.example.computergraphics.utils.Utils;
@@ -120,6 +120,8 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         kdtree = new KDTree(triangles);
 
 //        testCollisionDetection();
+
+        program.useProgram();
     }
     private long lastTime = System.nanoTime();
     private int frames;
@@ -134,10 +136,9 @@ public class CollisionDetectionRenderer extends BaseRenderer {
 
         // Redraw background color
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
+        eye = Utils.rotateVec3Yaxis(eye, mAngle);
         Matrix.setLookAtM(viewMatrix, 0, eye[0], eye[1], eye[2], 0f, 0f, 0f, 0f, 1.0f, 0.0f);
         Matrix.multiplyMM(vpMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
-        Matrix.setRotateM(rotationMatrix, 0, mAngle, 0f, 1.0f, 0.0f);
-        GLES30.glUseProgram(program.program);
 
         for(Line l : lines){
             program.draw(l);
@@ -150,8 +151,8 @@ public class CollisionDetectionRenderer extends BaseRenderer {
             for (int i = 0; i < triangles.size(); i++) {
                 List<GraphicObject.Intersection> intersectionList = triangles.get(i).getIntersectionsWithLine(line);
                 for (GraphicObject.Intersection intersection : intersectionList) {
-                    if (intersection.point != null) {
-                        Point p = intersection.point;
+                    if (intersection.coord != null) {
+                        Point p = new Point(intersection.coord, context);
                         program.draw(p);
                     } else if (intersection.line != null) {
                         Line l = intersection.line;
@@ -166,8 +167,8 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         for(Line line : lines){
             List<GraphicObject.Intersection> intersectionList = grid.getIntersectionWithLine(line);
             for(GraphicObject.Intersection intersection : intersectionList){
-                if(intersection.point != null){
-                    Point p = intersection.point;
+                if(intersection.coord != null){
+                    Point p = new Point(intersection.coord, context);
 //                    program.draw(p);
                 }
                 else if(intersection.line != null){
@@ -182,8 +183,8 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         for(Line line: lines){
             List<GraphicObject.Intersection> intersectionList = kdtree.getIntersectionWithLine(line);
             for(GraphicObject.Intersection intersection : intersectionList){
-                if(intersection.point != null){
-                    Point p = intersection.point;
+                if(intersection.coord != null){
+                    Point p = new Point(intersection.coord, context);
 //                    program.draw(p);
                 }
                 else if(intersection.line != null){

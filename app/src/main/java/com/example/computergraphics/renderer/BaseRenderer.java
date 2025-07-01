@@ -17,8 +17,8 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
     protected float[] vpMatrix = new float[16];
     protected float[] projectionMatrix = new float[16];
     protected float[] viewMatrix = new float [16];
-    protected float[] rotationMatrix = new float[16];
     protected float[] eye = { 0.0f, 2.0f, 3.0f };
+    protected float[] lightSource;
     public volatile float mAngle;
     public float getAngle() {
         return this.mAngle;
@@ -36,12 +36,11 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
     }
     public class Program {
         public int program;
-        String vertexShaderCode;
-        String fragmentShaderCode;
         int mvpMatrixHandle;
         int mvMatrixHandle;
         int useTexture;
         int useNormal;
+        int useLight;
         int textureUniformHandle;
         int colorHandle;
         int lightPositionHandle;
@@ -54,8 +53,6 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
         int textureCoordinateHandle;
         public Program(String vertexShaderCode, String fragmentShaderCode){
             this.program = GLES30.glCreateProgram();
-            this.vertexShaderCode = vertexShaderCode;
-            this.fragmentShaderCode = fragmentShaderCode;
 
             int vertexShader = loadShader(GLES30.GL_VERTEX_SHADER,
                     vertexShaderCode);
@@ -78,6 +75,7 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
             mvMatrixHandle = GLES30.glGetUniformLocation(program, "uMVMatrix");
             useTexture = GLES30.glGetUniformLocation(program, "uUseTexture");
             useNormal = GLES30.glGetUniformLocation(program, "uUseNormal");
+            useLight = GLES30.glGetUniformLocation(program, "uUseLight");
             textureUniformHandle = GLES30.glGetUniformLocation(program, "uTexture");
             colorHandle = GLES30.glGetUniformLocation(program, "uColor");
             lightPositionHandle = GLES30.glGetUniformLocation(program, "uLightPosition");
@@ -103,7 +101,6 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
             float[] color = o.getColor();
             GLES30.glUniform4fv(colorHandle, 1, color, 0);
             o.modelMatrix = Utils.getModelMatrix(o.translation, o.rotation, o.scale);
-            Matrix.multiplyMM(o.modelMatrix, 0, rotationMatrix, 0, o.modelMatrix, 0);
             float [] vpMatrix = new float[16];
             Matrix.multiplyMM(vpMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
             float [] mvpMatrix = new float[16];
@@ -119,7 +116,7 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
             MaterialFileHandle mtl = o.mtl;
             int textureHandle = mtl.textureHandle;
             GLES30.glUniform1i(useTexture, 0);
-            if (o.textureCoordinateBuffer != null && textureCoordinateHandle >= 0) {
+            if (o.textureCoordinateBuffer != null && textureCoordinateHandle >= 0 && textureHandle >= 0) {
                 GLES30.glEnableVertexAttribArray(textureCoordinateHandle);
                 GLES30.glUniform1i(useTexture, 1);
                 GLES30.glVertexAttribPointer(
@@ -135,8 +132,10 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
                 GLES30.glUniform1i(textureUniformHandle, 0);
             }
 
-            if (o.lightPositionData != null && lightPositionHandle >= 0){
-                GLES30.glUniform3fv(lightPositionHandle, 1, o.lightPositionData, 0);
+            GLES30.glUniform1i(useLight, 0);
+            if (lightSource != null && lightPositionHandle >= 0){
+                GLES30.glUniform1i(useLight, 1);
+                GLES30.glUniform3fv(lightPositionHandle, 1, lightSource, 0);
             }
 
             GLES30.glUniform3fv(viewPositionHandle, 1, eye, 0);
@@ -161,9 +160,56 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
             }
             // Disable vertex array
             GLES30.glDisableVertexAttribArray(positionHandle);
+            if (textureCoordinateHandle >= 0){
+                GLES30.glDisableVertexAttribArray(textureCoordinateHandle);
+            }
         }
         public void useProgram(){
             GLES30.glUseProgram(program);
+        }
+    }
+    public class RayTracingProgram{
+        int program;
+
+        int positionHandle;
+        int textureCoordinateHandle;
+        int useTexture;
+        int useNormal;
+
+        public RayTracingProgram(String vertexShaderCode, String fragmentShaderCode){
+            this.program = GLES30.glCreateProgram();
+
+            int vertexShader = loadShader(GLES30.GL_VERTEX_SHADER,
+                    vertexShaderCode);
+            int fragmentShader = loadShader(GLES30.GL_FRAGMENT_SHADER,
+                    fragmentShaderCode);
+            // create empty OpenGL ES Program
+            GLES30.glAttachShader(program, vertexShader);
+            GLES30.glAttachShader(program, fragmentShader);
+            GLES30.glLinkProgram(program);
+
+            int[] linkStatus = new int[1];
+            GLES30.glGetProgramiv(program, GLES30.GL_LINK_STATUS, linkStatus, 0);
+            if (linkStatus[0] == 0) {
+                // Linking failed
+                Log.e("Shader", "Program linking failed.");
+                Log.e("Shader", GLES30.glGetProgramInfoLog(program));
+            }
+
+            positionHandle = GLES30.glGetAttribLocation(program, "aPosition");
+            textureCoordinateHandle = GLES30.glGetAttribLocation(program, "aTexCoordinate");
+            useTexture = GLES30.glGetUniformLocation(program, "uUseTexture");
+            useNormal = GLES30.glGetUniformLocation(program, "uUseNormal");
+        }
+        public void draw(GraphicObject o){
+            GLES30.glEnableVertexAttribArray(positionHandle);
+            GLES30.glVertexAttribPointer(positionHandle,
+                    2, GLES30.GL_FLOAT,
+                    false, 0, o.vertexBuffer);
+
+            MaterialFileHandle mtl = o.mtl;
+            int textureHandle = mtl.textureHandle;
+            GLES30.glUniform1i(useTexture, 0);
         }
     }
 }
