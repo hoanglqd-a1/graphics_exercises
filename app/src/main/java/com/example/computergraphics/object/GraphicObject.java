@@ -1,13 +1,11 @@
 package com.example.computergraphics.object;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
-import android.util.Log;
 
 import com.example.computergraphics.utils.MaterialFileHandle;
 import com.example.computergraphics.utils.MatrixUtils;
@@ -274,7 +272,7 @@ public class GraphicObject {
         }
         return curr;
     }
-    public List<Intersection> getIntersectionsWithLine(Line line){
+    public List<Intersection> getIntersectionsWithRay(Ray ray){
         List<Intersection> intersections = new ArrayList<>();
         float[] worldVertices = getWorldVertices();
         float[] worldNormals = getWorldNormals();
@@ -286,14 +284,14 @@ public class GraphicObject {
             float [] v0v1temp = MatrixUtils.sub(v1, v0);
             float [] geometricNormal = MatrixUtils.normalize(MatrixUtils.crossProduct(v0v1temp, v0v2temp));
             float D = - MatrixUtils.dot(geometricNormal, v0);
-            float NR = MatrixUtils.dot(geometricNormal, line.direction);
+            float NR = MatrixUtils.dot(geometricNormal, ray.direction);
             if (Math.abs(NR) < 1e-6){
-                Line l0 = new Line(v1, v2, context);
-                Line l1 = new Line(v2, v0, context);
-                Line l2 = new Line(v0, v1, context);
-                float [] p0 = line.getIntersectionWithLine(l0);
-                float [] p1 = line.getIntersectionWithLine(l1);
-                float [] p2 = line.getIntersectionWithLine(l2);
+                Ray l0 = Ray.fromPoints(v1, v2, context);
+                Ray l1 = Ray.fromPoints(v2, v0, context);
+                Ray l2 = Ray.fromPoints(v0, v1, context);
+                float [] p0 = ray.getIntersectionWithRay(l0);
+                float [] p1 = ray.getIntersectionWithRay(l1);
+                float [] p2 = ray.getIntersectionWithRay(l2);
                 List<float[]> points = new ArrayList<>();
                 if (p0 != null && (p0[0] - v1[0]) * (p0[0] - v2[0]) - 1e-6 < 0){
                     points.add(p0);
@@ -306,15 +304,15 @@ public class GraphicObject {
                 }
                 if (points.size() != 2) continue;
                 intersections.add(new Intersection(
-                    new Line(points.get(0), points.get(1), context)
+                    points.get(0), points.get(1)
                 ));
             }
             else {
-                float t = - (MatrixUtils.dot(geometricNormal, line.source) + D) / NR;
+                float t = - (MatrixUtils.dot(geometricNormal, ray.source) + D) / NR;
                 if (t < 1e-6){
                     continue;
                 }
-                float [] p = MatrixUtils.add(line.source, MatrixUtils.mul(line.direction, t));
+                float [] p = MatrixUtils.add(ray.source, MatrixUtils.mul(ray.direction, t));
                 float [] v0v1 = MatrixUtils.sub(v1, v0);
                 float [] v1v2 = MatrixUtils.sub(v2, v1);
                 float [] v2v0 = MatrixUtils.sub(v0, v2);
@@ -390,17 +388,19 @@ public class GraphicObject {
         );
     }
     static public class Intersection{
-        public GraphicObject object;
+        public GraphicObject object = null;
+        public float[][] endpoints = null;
         public float[] position = null;
         public float[] normal = null;
-        public Line line = null;
+        public Ray ray = null;
         Intersection(GraphicObject object, float[] position, float[] normal){
             this.object = object;
             this.position = position;
             this.normal = normal;
         }
-        Intersection(Line line){
-            this.line = line;
+        Intersection(float[] v1, float[] v2){
+            this.endpoints[0] = v1;
+            this.endpoints[1] = v2;
         }
     }
 }

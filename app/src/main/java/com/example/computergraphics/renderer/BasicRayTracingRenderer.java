@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import androidx.compose.ui.graphics.GraphicsContext;
 
 import com.example.computergraphics.Camera;
+import com.example.computergraphics.PointLight;
 import com.example.computergraphics.R;
 import com.example.computergraphics.object.*;
 import com.example.computergraphics.utils.*;
@@ -32,12 +33,14 @@ public class BasicRayTracingRenderer extends BaseRenderer {
     Sphere ground;
     Camera camera;
     List<GraphicObject> objectList = new ArrayList<>();
-    float[] cameraLightsSource = {0f, 3f, 5f};
+//    PointLight pointLight = new PointLight(new float[] {0f, 3f, 5f}, ArgbColor.white);
+    List<PointLight> pointLights = new ArrayList<>();
     final float[] BACKGROUND_COLOR = ArgbColor.lightBlue;
     final int MAXIMUM_REFLECTION = 3;
     float AIR_REFRACTIVE_INDEX = 1f;
-    float[] fullyReflective = {0f, 1f, 0f};
-    float[] fullyRefractive = {0f, 0f, 1f};
+    float[] FULLY_REFLECTIVE = {0f, 1f, 0f};
+    float[] FULLY_REFRACTIVE = {0f, 0f, 1f};
+    float[] HALF_REFLECTIVE = {0.5f, 0.5f, 0f};
     public BasicRayTracingRenderer(Context context){
         this.context = context;
         this.eye = new float[]{0.0f, 0.0f, 3.0f};
@@ -60,16 +63,20 @@ public class BasicRayTracingRenderer extends BaseRenderer {
         );
         ground.setColor(ArgbColor.white);
         objectList.add(ground);
-        Sphere s1 = new Sphere(new float[] {-0.5f, 0f, 0f}, 0.5f, context);
+        Sphere s1 = new Sphere(new float[] {0f, 0f, 0f}, 0.5f, context);
         Sphere s2 = new Sphere(new float[] {1f, 0f, 0f}, 0.5f, context);
         Sphere s3 = new Sphere(new float[] {0f, 0f, 1f}, 0.5f, context);
-        s1.colorCoefficient = fullyReflective;
-        s3.colorCoefficient = fullyRefractive;
+        Sphere s4 = new Sphere(new float[] {-1f, 0f, 0f}, 0.5f, context);
+        s1.colorCoefficient = FULLY_REFLECTIVE;
+        s3.colorCoefficient = FULLY_REFRACTIVE;
+        s4.colorCoefficient = HALF_REFLECTIVE;
         objectList.add(s1);
         objectList.add(s2);
 //        objectList.add(s3);
-        ground.id = 1;
-//        s3.id = 2;
+        objectList.add(s4);
+        pointLights.add(new PointLight(new float[] {0f, 3f, 5f}, ArgbColor.white));
+        pointLights.add(new PointLight(new float[] {0f, -3f, 5f}, ArgbColor.white));
+        pointLights.add(new PointLight(new float[] {0f, 3f, 3f}, ArgbColor.white));
     }
 
     @Override
@@ -88,8 +95,8 @@ public class BasicRayTracingRenderer extends BaseRenderer {
         Matrix.frustumM(projectionMatrix, 0, -aspect, aspect, -1, 1, 1, 10);
         program.useProgram();
         camera = new Camera(
-            512,
-            1024,
+            width,
+            height,
             objectList,
             eye,
             forward,
@@ -98,7 +105,7 @@ public class BasicRayTracingRenderer extends BaseRenderer {
             aspect,
             MAXIMUM_REFLECTION,
             BACKGROUND_COLOR,
-            cameraLightsSource,
+            pointLights,
             context
         );
     }

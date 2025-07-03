@@ -4,7 +4,7 @@ import static java.lang.Math.min;
 import static java.lang.Math.max;
 
 import com.example.computergraphics.object.GraphicObject;
-import com.example.computergraphics.object.Line;
+import com.example.computergraphics.object.Ray;
 import com.example.computergraphics.utils.MatrixUtils;
 import com.example.computergraphics.utils.Utils;
 
@@ -77,7 +77,7 @@ public class Grid {
             }
         }
     }
-    public Set<List<Integer>> traverse(Line l){
+    public Set<List<Integer>> traverse(Ray l){
         Set<List<Integer>> voxelIntersectionSet = new HashSet<>();
         List<Integer> start = world2VoxelCoordinate(l.source);
         if(start.get(0) >= 0 && start.get(1) >=0 && start.get(2) >= 0) voxelIntersectionSet.add(start);
@@ -159,7 +159,7 @@ public class Grid {
         }
         return objectsSet;
     }
-    public List<GraphicObject.Intersection> getIntersectionWithLine(Line l){
+    public List<GraphicObject.Intersection> getIntersectionWithRay(Ray l){
         List<GraphicObject.Intersection> intersections = new ArrayList<>();
         Set<List<Integer>> intersectedVoxel = this.traverse(l);
 //        Log.d("Object count", "Resolution " + Arrays.toString(resolution));
@@ -167,7 +167,7 @@ public class Grid {
         Set<GraphicObject> intersectedObjects = this.getIntersectedObjectSet(intersectedVoxel);
 //        Log.d("Object count", "Number of intersected objects: " + intersectedObjects.size());
         for(GraphicObject obj: intersectedObjects){
-            List<GraphicObject.Intersection> intersectionsWithLinePerObject = obj.getIntersectionsWithLine(l);
+            List<GraphicObject.Intersection> intersectionsWithLinePerObject = obj.getIntersectionsWithRay(l);
             intersections.addAll(intersectionsWithLinePerObject);
         }
         return intersections;

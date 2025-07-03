@@ -24,7 +24,7 @@ public class TestRenderer extends BaseRenderer{
     Program program;
     Sphere sphere;
     Cube cube;
-    Line line;
+    Ray ray;
     public TestRenderer(Context context){
         this.context = context;
         this.lightSource = new float[] {1f, 0f, 3f};
@@ -43,8 +43,8 @@ public class TestRenderer extends BaseRenderer{
         program = new Program(vertexShaderCode, fragmentShaderCode);
         sphere = new Sphere(context);
         cube = new Cube(context);
-        line = new Line(MatrixUtils.mul(MatrixUtils.randomVector(3), 0.5f),
-                MatrixUtils.randomVector(3), 40, context);
+        ray = new Ray(MatrixUtils.mul(MatrixUtils.randomVector(3), 0.5f),
+                MatrixUtils.randomVector(3), context);
     }
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -73,8 +73,8 @@ public class TestRenderer extends BaseRenderer{
 
         program.draw(sphere);
 //        program.draw(cube);
-        program.draw(line);
-        List<GraphicObject.Intersection> intersections = sphere.getIntersectionsWithLine(line);
+        program.draw(ray);
+        List<GraphicObject.Intersection> intersections = sphere.getIntersectionsWithRay(ray);
         for(GraphicObject.Intersection intersection : intersections){
             if (intersection.position!= null){
                 program.draw(new Point(intersection.position, context));

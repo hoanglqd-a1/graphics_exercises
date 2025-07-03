@@ -1,7 +1,7 @@
 package com.example.computergraphics.CollisionDetection;
 
 import com.example.computergraphics.object.GraphicObject;
-import com.example.computergraphics.object.Line;
+import com.example.computergraphics.object.Ray;
 import com.example.computergraphics.utils.BBox;
 import com.example.computergraphics.utils.MatrixUtils;
 
@@ -88,14 +88,14 @@ public class KDTree {
 //        Log.d("KDTree", "Number of intersected Objects: " + intersectedObjects.size());
         return intersectedObjects;
     }
-    public List<GraphicObject.Intersection> getIntersectionWithLine(Line l){
+    public List<GraphicObject.Intersection> getIntersectionWithRay(Ray l){
         List<GraphicObject.Intersection> intersections = new ArrayList<>();
         float[] source = l.getSource();
         float[] direction = l.getDirection();
         Set<GraphicObject> intersectedObjects = traverse(rootNode, source, direction);
         for(GraphicObject obj: intersectedObjects){
             intersections.addAll(
-                obj.getIntersectionsWithLine(l)
+                obj.getIntersectionsWithRay(l)
             );
         }
         return intersections;

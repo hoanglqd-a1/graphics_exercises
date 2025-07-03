@@ -4,9 +4,9 @@ import android.content.Context;
 import android.util.Log;
 
 import com.example.computergraphics.CollisionDetection.*;
+import com.example.computergraphics.object.Ray;
 import com.example.computergraphics.object.testObject.ExperiementBox;
 import com.example.computergraphics.object.GraphicObject;
-import com.example.computergraphics.object.Line;
 
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class Unit {
             box.id = i;
             experimentBoxes.add(box);
         }
-        List<Line> lines = new ArrayList<>();
+        List<Ray> rays = new ArrayList<>();
         for(int i=0; i<input.n_rays; i++){
             float[] origin = new float[] {
                 input.origins[i*3], input.origins[i*3+1], input.origins[i*3+2]
@@ -64,41 +64,41 @@ public class Unit {
             float[] direction = new float[] {
                 input.directions[i*3], input.directions[i*3+1], input.directions[i*3+2]
             };
-            Line tmp = new Line(origin, direction, 0, context);
-            lines.add(tmp);
+            Ray tmp = new Ray(origin, direction, context);
+            rays.add(tmp);
         }
         List<Integer>[] intersectedObjectsList = new ArrayList[input.n_rays];
 //        Grid grid = new Grid(experimentBoxes);
         KDTree kdTree = new KDTree(experimentBoxes);
 
         long start = System.currentTimeMillis();
-        for(int i=0; i<lines.size(); i++){
+        for(int i = 0; i< rays.size(); i++){
             intersectedObjectsList[i] = new ArrayList<>();
-            Set<GraphicObject> intersectedObjects = kdTree.traverse(kdTree.rootNode, lines.get(i).getSource(), lines.get(i).getDirection());
+            Set<GraphicObject> intersectedObjects = kdTree.traverse(kdTree.rootNode, rays.get(i).getSource(), rays.get(i).getDirection());
             for(GraphicObject obj : intersectedObjects){
-                obj.getIntersectionsWithLine(lines.get(i));
+                obj.getIntersectionsWithRay(rays.get(i));
                 if(obj.isIntersected){
                     intersectedObjectsList[i].add(obj.id);
                     obj.isIntersected = false;
                 }
             }
         }
-//        for(int i=0; i<lines.size(); i++){
+//        for(int i=0; i<rays.size(); i++){
 //            intersectedObjectsList[i] = new ArrayList<>();
-//            Set<List<Integer>> voxels = grid.traverse(lines.get(i));
+//            Set<List<Integer>> voxels = grid.traverse(rays.get(i));
 //            Set<GraphicObject> intersectedObjects = grid.getIntersectedObjectSet(voxels);
 //            for(GraphicObject obj : intersectedObjects){
-//                obj.getIntersectionsWithLine(lines.get(i));
+//                obj.getIntersectionsWithLine(rays.get(i));
 //                if(obj.isIntersected){
 //                    intersectedObjectsList[i].add(obj.id);
 //                    obj.isIntersected = false;
 //                }
 //            }
 //        }
-//        for(int i=0; i<lines.size(); i++){
+//        for(int i=0; i<rays.size(); i++){
 //            intersectedObjectsList[i] = new ArrayList<>();
 //            for (int j=0; j<experimentBoxes.size(); j++){
-//                List<float[][]> tmp = experimentBoxes.get(j).getIntersectionsWithLine(lines.get(i));
+//                List<float[][]> tmp = experimentBoxes.get(j).getIntersectionsWithLine(rays.get(i));
 //                if(experimentBoxes.get(j).isIntersected){
 //                    intersectedObjectsList[i].add(j);
 //                    experimentBoxes.get(j).isIntersected = false;

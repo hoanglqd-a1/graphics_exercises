@@ -1,13 +1,10 @@
 package com.example.computergraphics.object;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.example.computergraphics.utils.MatrixUtils;
-import com.example.computergraphics.utils.Utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Sphere extends GraphicObject{
@@ -145,12 +142,12 @@ public class Sphere extends GraphicObject{
         finalTexCoords.add(sourceTexCoords.get(index * 2));
         finalTexCoords.add(sourceTexCoords.get(index * 2 + 1));
     }
-    public List<Intersection> getIntersectionsWithLine(Line line){
+    public List<Intersection> getIntersectionsWithRay(Ray ray){
         List<Intersection> intersections = new ArrayList<>();
         float[] center = getWorldCenter();
         float radius = getWorldRadius();
-        float[] source = line.getSource();
-        float[] direction = MatrixUtils.normalize(line.getDirection());
+        float[] source = ray.source;
+        float[] direction = ray.direction;
         float[] center2Source = MatrixUtils.sub(source, center);
         float b = MatrixUtils.dot(direction, center2Source);
         float c = MatrixUtils.dot(center2Source, center2Source) - radius * radius;

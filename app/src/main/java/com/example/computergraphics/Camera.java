@@ -2,7 +2,6 @@ package com.example.computergraphics;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.nfc.Tag;
 import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.util.Log;
@@ -26,13 +25,15 @@ public class Camera {
     float aspect;
     float[] eye;
     float[] forward, right, up;
-    float[] lightSource;
-    Line[] lines;
+    List<PointLight> lightSources;
+    Ray[] rays;
     List<GraphicObject> objectList;
     final float[] BACKGROUND_COLOR;
     final float[] SCREEN_SCALE;
     final int MAXIMUM_REFLECTION;
     Context context;
+    float EPSILON = 1e-4f;
+    final String TAG = "Ray Tracing";
     public Camera(int pixelX, int pixelY,
                   List<GraphicObject> objectList,
                   float[] eye,
@@ -42,7 +43,7 @@ public class Camera {
                   float aspect,
                   int MAXIMUM_REFLECTION,
                   float[] BACKGROUND_COLOR,
-                  float[] lightSource,
+                  List<PointLight> lightSources,
                   Context context
     ){
         this.pixelX = pixelX;
@@ -55,10 +56,11 @@ public class Camera {
         this.aspect = aspect;
         this.BACKGROUND_COLOR = BACKGROUND_COLOR;
         this.MAXIMUM_REFLECTION = MAXIMUM_REFLECTION;
-        this.lightSource = lightSource;
+        this.lightSources = lightSources;
         this.SCREEN_SCALE = new float[] {aspect * 2, 2f, 1f};
         this.context = context;
-        lines = new Line[pixelX * pixelY];
+        this.screen = new Screen(context);
+        this.screen.setScale(SCREEN_SCALE);
         pixels = new int[pixelX * pixelY];
         initScreen();
     }
@@ -67,26 +69,18 @@ public class Camera {
         for(int i=0; i<pixelY; i++){
             for(int j=0; j<pixelX; j++){
                 float ndc_x = (float) (j + 0.5) / pixelX;
-                float ndc_y = (float) (i + 0.5) / pixelY ;
+                float ndc_y = (float) (i + 0.5) / pixelY;
                 float screen_x = 2 * ndc_x - 1;
                 float screen_y = 2 * ndc_y - 1;
-                float[] rayDirecion = MatrixUtils.add(
+                float[] rayDirection = MatrixUtils.add(
                     forward,
                     MatrixUtils.add(
                         MatrixUtils.mul(right, screen_x * tanFov * aspect),
                         MatrixUtils.mul(up, -screen_y * tanFov)
                     )
                 );
-                rayDirecion = MatrixUtils.normalize(rayDirecion);
-                lines[i * pixelX + j] = new Line(eye, rayDirecion, -1, context);
-            }
-        }
-        screen = new Screen(context);
-        screen.setScale(SCREEN_SCALE);
-        for(int i=0; i<pixelY; i++){
-            for(int j=0; j<pixelX; j++){
-                Line line = lines[i * pixelX + j];
-                float[] pixelColor = rayTracing(line, MAXIMUM_REFLECTION, 1f);
+                rayDirection = MatrixUtils.normalize(rayDirection);
+                float[] pixelColor = rayTracing(eye, rayDirection, 0, 1f);
                 int a = Math.round(pixelColor[3] * 255);
                 int r = Math.round(pixelColor[0] * 255);
                 int g = Math.round(pixelColor[1] * 255);
@@ -108,60 +102,54 @@ public class Camera {
         bitmap.recycle();
         mtl.textureHandle = textureHandle[0];
     }
-    float[] rayTracing(Line line, int reflectCount, float refractiveIndex){
-        Intersection nearest = getFirstIntersection(line);
-        if(nearest == null) return BACKGROUND_COLOR;
-        if(isShadow(nearest.position, nearest.normal)) return ArgbColor.black;
-        float[] position = nearest.position;
-        float[] normal = nearest.normal;
-        float[] lightVector = MatrixUtils.normalize(
-                MatrixUtils.sub(position, lightSource)
+    float[] rayTracing(float[] raySource, float[] rayDirection, int rayReflectCount, float refractiveIndex){
+        Ray ray = new Ray(
+            shiftPosition(raySource, rayDirection, EPSILON),
+            rayDirection,
+            context
         );
-        float[] viewVector = MatrixUtils.normalize(
-                MatrixUtils.sub(position, eye)
-        );
-        float[] reflectedVector = reflect(
-                viewVector, normal
-        );
-        float diffuse = Math.max(- MatrixUtils.dot(normal, lightVector), 0.0f);
-        float[] localColor = MatrixUtils.mul(nearest.object.getColor(), diffuse);
-        if(reflectCount == 0) return localColor;
-        float[] reflectColor = ArgbColor.black;
-        if (nearest.object.colorCoefficient[1] > 0.1) {
-            reflectColor = rayTracing(
-                    new Line(position, reflectedVector, 100, context),
-                    reflectCount - 1, refractiveIndex);
+        Intersection nearest = getFirstIntersection(ray);
+        if(nearest == null) {
+            return BACKGROUND_COLOR;
         }
-//            float[] refractedVector = getRefractedVector(
-//                viewVector,
-//                normal,
-//                refractiveIndex,
+        float[] colorCoefficient = nearest.object.colorCoefficient;
+        float[] hitPosition = nearest.position;
+        float[] hitNormal = nearest.normal;
+
+        float[] reflectedDirection = reflect(
+                rayDirection, hitNormal
+        );
+        float[] localColor = computeLocalColor(hitPosition, hitNormal, lightSources, nearest.object);
+        if(rayReflectCount == MAXIMUM_REFLECTION) return localColor;
+        float[] reflectColor = ArgbColor.black;
+        if (colorCoefficient[1] > 0.1) {
+            reflectColor = rayTracing(
+                hitPosition, reflectedDirection,
+                rayReflectCount + 1, refractiveIndex);
+        }
+//        float[] refractedVector = getRefractedVector(rayDirection, hitNormal, refractiveIndex, nearest.object.refractionIndex);
+        float[] refractColor = ArgbColor.black;
+//        if (refractedVector != null && colorCoefficient[2] > 0.1f){
+//            refractColor = rayTracing(
+//                hitPosition, refractedVector,
+//                rayReflectCount - 1,
 //                nearest.object.refractionIndex
 //            );
-//            float[] refractedVector = line.getDirection();
-        float[] refractColor = ArgbColor.black;
-//            if (refractedVector != null && nearest.object.colorCoefficient[2] > 0.1f){
-//                float[] shiftedPosition = MatrixUtils.add(position, MatrixUtils.mul(refractedVector, epsilon));
-//                refractColor = rayTracing(
-//                    new Line(shiftedPosition, refractedVector, 100, context),
-//                    reflectCount - 1,
-//                    nearest.object.refractionIndex
-//                );
-//            }
-        float[] colorCoefficient = nearest.object.colorCoefficient;
-        return MatrixUtils.add(
+//        }
+        float[] finalColor = MatrixUtils.add(
                 MatrixUtils.mul(localColor,   colorCoefficient[0]),
                 MatrixUtils.mul(reflectColor, colorCoefficient[1]),
                 MatrixUtils.mul(refractColor, colorCoefficient[2])
         );
+        return finalColor;
     }
-    Intersection getFirstIntersection (Line line){
-        float[] source = line.source;
-        float[] direction = line.direction;
+    Intersection getFirstIntersection (Ray ray){
+        float[] source = ray.source;
+        float[] direction = ray.direction;
         List<Intersection> intersectionList = new ArrayList<>();
         for(GraphicObject object : objectList){
             List<Intersection> intersections =
-                    object.getIntersectionsWithLine(line);
+                object.getIntersectionsWithRay(ray);
             for(Intersection intersection: intersections){
                 if(intersection.position != null){
                     intersectionList.add(intersection);
@@ -182,30 +170,45 @@ public class Camera {
         });
         return intersectionList.get(0);
     }
-    boolean isShadow(float[] position, float[] normal){
-        final float epsilon = 1e-6f;
-        float[] shiftedPosition = MatrixUtils.add(position, MatrixUtils.mul(normal, epsilon));
-        Line reverseLightRay = new Line(shiftedPosition, lightSource, context);
+    boolean isShadow(float[] position, float[] normal, PointLight lightSource){
+        float[] shiftedPosition = MatrixUtils.add(position, MatrixUtils.mul(normal, EPSILON));
+        Ray reverseLightRay = Ray.fromPoints(shiftedPosition, lightSource.position, context);
         float[] reverseDirection = reverseLightRay.direction;
-        float dist2Light = distFromSource2Dest(position, reverseDirection, lightSource);
+        float dist2Light = distFromSource2Dest(position, reverseDirection, lightSource.position);
         for (GraphicObject object : objectList){
-            List<Intersection> intersections = object.getIntersectionsWithLine(reverseLightRay);
+            List<Intersection> intersections = object.getIntersectionsWithRay(reverseLightRay);
             for(Intersection intersection : intersections){
                 if(intersection.position != null &&
-                    MatrixUtils.norm(
-                        MatrixUtils.sub(position, intersection.position)
-                    ) > 1e-2f &&
                     distFromSource2Dest(position, reverseDirection, intersection.position) < dist2Light) return true;
             }
         }
         return false;
     }
+    public float[] computeLocalColor(float[] position, float[] normal, List<PointLight> lightSources, GraphicObject object){
+        float[] localColor = new float[] {0f, 0f, 0f, 0f};
+        for (PointLight lightSource: lightSources){
+            if (isShadow(position, normal, lightSource)) continue;
+            float[] lightVector = MatrixUtils.normalize(
+                    MatrixUtils.sub(position, lightSource.position)
+            );
+            float cosine = Math.max(- MatrixUtils.dot(normal, lightVector), 0.0f);
+            float[] fr = MatrixUtils.mul(object.getColor(), (float) (1/Math.PI));
+//        float[] fr = object.getColor();
+            localColor = MatrixUtils.add(
+                localColor,
+                MatrixUtils.mul(
+                    MatrixUtils.mul(fr, lightSource.color),
+                    cosine
+                )
+            );
+        }
+        return localColor;
+    }
     public static float[] reflect(float[] v, float[] normal){
         float[] n = MatrixUtils.normalize(normal);
         float dot = MatrixUtils.dot(v, n);
         float[] scaledNormal = MatrixUtils.mul(n, 2 * dot);
-        float[] reflected = MatrixUtils.sub(v, scaledNormal);
-        return reflected;
+        return MatrixUtils.sub(v, scaledNormal);
     }
     public static float distFromSource2Dest(float[] source, float[] direction, float[] dest){
         for(int axis=0; axis<3; axis++){
@@ -215,7 +218,7 @@ public class Camera {
         }
         return 0.0f;
     }
-    public float[] getRefractedVector(float[] incidenceVector, float[] normal, float leavingRefraction, float enteringRefraction){
+    public static float[] getRefractedVector(float[] incidenceVector, float[] normal, float leavingRefraction, float enteringRefraction){
         float n = leavingRefraction / enteringRefraction;
         float c1 = - MatrixUtils.dot(incidenceVector, normal);
         if (1 - n*n*(1 - c1*c1) < 0){
@@ -227,5 +230,8 @@ public class Camera {
                 MatrixUtils.mul(normal, n * c1 - c2)
         );
         return T;
+    }
+    public static float[] shiftPosition(float[] position, float[] direction, float epsilon){
+        return MatrixUtils.add(position, MatrixUtils.mul(direction, epsilon));
     }
 }

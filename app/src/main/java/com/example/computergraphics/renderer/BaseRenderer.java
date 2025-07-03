@@ -7,7 +7,7 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import com.example.computergraphics.object.GraphicObject;
-import com.example.computergraphics.object.Line;
+import com.example.computergraphics.object.Ray;
 import com.example.computergraphics.object.Point;
 import com.example.computergraphics.utils.MaterialFileHandle;
 import com.example.computergraphics.utils.Utils;
@@ -153,7 +153,7 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
             }
             if (o instanceof Point){
                 GLES30.glDrawArrays(GLES30.GL_POINTS, 0, o.vertexData.length / GraphicObject.COORDS_PER_VERTEX);
-            } else if (o instanceof Line) {
+            } else if (o instanceof Ray) {
                 GLES30.glDrawArrays(GLES30.GL_LINES, 0, o.vertexData.length / GraphicObject.COORDS_PER_VERTEX);
             } else {
                 GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, o.vertexData.length / GraphicObject.COORDS_PER_VERTEX);

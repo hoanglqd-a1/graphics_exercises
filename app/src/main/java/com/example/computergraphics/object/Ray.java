@@ -1,52 +1,45 @@
 package com.example.computergraphics.object;
 
 import android.content.Context;
-import android.opengl.GLES30;
 import android.opengl.Matrix;
-import android.util.Log;
 
 import com.example.computergraphics.utils.MatrixUtils;
 import com.example.computergraphics.utils.Utils;
 
-public class Line extends GraphicObject {
+public class Ray extends GraphicObject {
     static float []  defaultSource = {
             -2.0f, 0.0f, -2.0f
     };
     static float [] defaultDirection = {
             0.1f, 0.0f, 0.1f
     };
-    static int defaultMaxLength = 40;
+    static int defaultImaginaryLength = 40;
 
     public float [] source;
     public float [] direction;
-    public float length;
     public float[] color = {0f, 0f, 1f, 1f};
-    public Line(float [] source, float [] direction, float length, Context context){
-        this(source,
-            MatrixUtils.add(source,
-                MatrixUtils.mul(direction, length > 0f ? length : defaultMaxLength)),
-            context);
+    public Ray(float [] source, float [] direction, Context context){
+        super(getVertex(source, MatrixUtils.normalize(direction)), null, null, context);
+        this.source = source;
+        this.direction = MatrixUtils.normalize(direction);
     }
-    public Line(Context context){
-        this(defaultSource, defaultDirection, defaultMaxLength, context);
+    public Ray(Context context){
+        this(defaultSource, defaultDirection, context);
     }
-    public Line(float [] start, float [] end, Context context){
-        super(
-            new float[] {start[0], start[1], start[2], end[0], end[1], end[2]},
-            null,
-            null,
-            context
-        );
-        source = start;
-        float [] ray = MatrixUtils.sub(end, start);
-        length = MatrixUtils.norm(ray);
-        direction = new float[] {ray[0] / length, ray[1] / length, ray[2] / length};
+    public static Ray fromPoints(float[] source, float[] end, Context context){
+        float[] direction = MatrixUtils.normalize(MatrixUtils.sub(end, source));
+        return new Ray(source, direction, context);
     }
-    public float[] getIntersectionWithLine(Line line){
+    static float[] getVertex(float[] source, float[] direction){
+        float[] end = MatrixUtils.add(source,
+                MatrixUtils.mul(direction, defaultImaginaryLength));
+        return new float[] {source[0], source[1], source[2], end[0], end[1], end[2]};
+    }
+    public float[] getIntersectionWithRay(Ray ray){
         float [] s1 = source;
-        float [] s2 = line.source;
+        float [] s2 = ray.source;
         float [] d1 = direction;
-        float [] d2 = line.direction;
+        float [] d2 = ray.direction;
         float [] r = MatrixUtils.sub(s1, s2);
         float a = MatrixUtils.dot(d1, d1);
         float b = MatrixUtils.dot(d1, d2);
@@ -79,8 +72,10 @@ public class Line extends GraphicObject {
         return new float[] {worldSource[0], worldSource[1], worldSource[2]};
     }
     public float[] getDirection(){
-        float[] modelMatrix = Utils.getModelMatrix(translation, rotation, scale);
-        float[] worldDirection = new float[] {direction[0], direction[1], direction[2], 1};
+        float[] identityMat = new float[16];
+        Matrix.setIdentityM(identityMat, 0);
+        float[] modelMatrix = Utils.getModelMatrix(identityMat, rotation, identityMat);
+        float[] worldDirection = new float[] {direction[0], direction[1], direction[2], 0};
         Matrix.multiplyMV(worldDirection, 0, modelMatrix, 0, worldDirection, 0);
         return new float[] {worldDirection[0], worldDirection[1], worldDirection[2]};
     }

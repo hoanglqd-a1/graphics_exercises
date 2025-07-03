@@ -30,9 +30,9 @@ public class CollisionDetectionRenderer extends BaseRenderer {
     private GraphicObject object;
     private Cube cube;
     private GraphicObject model;
-    private Line line;
+    private Ray ray;
     private Cube [] cubes;
-    private Line [] lines;
+    private Ray[] rays;
     private List<GraphicObject> triangles;
     private GroupedObjects groupedObjects;
     private Grid grid;
@@ -76,7 +76,7 @@ public class CollisionDetectionRenderer extends BaseRenderer {
 
         Random random = new Random();
         cubes = new Cube[10];
-        lines = new Line[NUM_OF_LINES];
+        rays = new Ray[NUM_OF_LINES];
         for(int i=0; i<cubes.length; i++){
             cubes[i] = new Cube(context);
             cubes[i].setTranslation(
@@ -87,7 +87,7 @@ public class CollisionDetectionRenderer extends BaseRenderer {
                 }
             );
         }
-        for (int i=0; i<lines.length; i++){
+        for (int i = 0; i< rays.length; i++){
             float[] source = new float[] {
                 2 * random.nextFloat() - 1f,
                 2 * random.nextFloat() - 1f,
@@ -98,7 +98,7 @@ public class CollisionDetectionRenderer extends BaseRenderer {
                 2 * random.nextFloat() - 1f,
                 2 * random.nextFloat() - 1f,
             };
-            lines[i] = new Line(source, direction, defaultLineLength, context);
+            rays[i] = new Ray(source, direction,context);
         }
         triangles = new ArrayList<>();
         for(int i=0; i<NUM_OF_TRIANGLES; i++){
@@ -140,22 +140,22 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         Matrix.setLookAtM(viewMatrix, 0, eye[0], eye[1], eye[2], 0f, 0f, 0f, 0f, 1.0f, 0.0f);
         Matrix.multiplyMM(vpMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
 
-        for(Line l : lines){
+        for(Ray l : rays){
             program.draw(l);
         }
         for(int i=0; i<triangles.size(); i++){
             program.draw(triangles.get(i));
         }
         long start = System.nanoTime();
-        for (Line line : lines) {
+        for (Ray ray : rays) {
             for (int i = 0; i < triangles.size(); i++) {
-                List<GraphicObject.Intersection> intersectionList = triangles.get(i).getIntersectionsWithLine(line);
+                List<GraphicObject.Intersection> intersectionList = triangles.get(i).getIntersectionsWithRay(ray);
                 for (GraphicObject.Intersection intersection : intersectionList) {
                     if (intersection.position != null) {
                         Point p = new Point(intersection.position, context);
                         program.draw(p);
-                    } else if (intersection.line != null) {
-                        Line l = intersection.line;
+                    } else if (intersection.ray != null) {
+                        Ray l = intersection.ray;
                         program.draw(l);
                     }
                 }
@@ -164,15 +164,15 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         long end = System.nanoTime();
         naive_total += end - start;
         start = System.nanoTime();
-        for(Line line : lines){
-            List<GraphicObject.Intersection> intersectionList = grid.getIntersectionWithLine(line);
+        for(Ray ray : rays){
+            List<GraphicObject.Intersection> intersectionList = grid.getIntersectionWithRay(ray);
             for(GraphicObject.Intersection intersection : intersectionList){
                 if(intersection.position != null){
                     Point p = new Point(intersection.position, context);
 //                    program.draw(p);
                 }
-                else if(intersection.line != null){
-                    Line l = intersection.line;
+                else if(intersection.ray != null){
+                    Ray l = intersection.ray;
 //                    program.draw(l);
                 }
             }
@@ -180,15 +180,15 @@ public class CollisionDetectionRenderer extends BaseRenderer {
         end = System.nanoTime();
         grid_total += end - start;
         start = System.nanoTime();
-        for(Line line: lines){
-            List<GraphicObject.Intersection> intersectionList = kdtree.getIntersectionWithLine(line);
+        for(Ray ray : rays){
+            List<GraphicObject.Intersection> intersectionList = kdtree.getIntersectionWithRay(ray);
             for(GraphicObject.Intersection intersection : intersectionList){
                 if(intersection.position != null){
                     Point p = new Point(intersection.position, context);
 //                    program.draw(p);
                 }
-                else if(intersection.line != null){
-                    Line l = intersection.line;
+                else if(intersection.ray != null){
+                    Ray l = intersection.ray;
 //                    program.draw(l);
                 }
             }
