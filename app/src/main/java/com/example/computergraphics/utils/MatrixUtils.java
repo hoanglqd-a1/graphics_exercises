@@ -80,7 +80,7 @@ public class MatrixUtils {
         }
         return vector;
     }
-    static public float[] upperBound(float[] l1, float[] l2){
+    static public float[] upper(float[] l1, float[] l2){
         assert (l1.length == l2.length);
         float[] upper = new float[l1.length];
         for(int i=0; i<l1.length; i++){
@@ -88,7 +88,7 @@ public class MatrixUtils {
         }
         return upper;
     }
-    static public float[] lowerBound(float[] l1, float[] l2){
+    static public float[] lower(float[] l1, float[] l2){
         assert (l1.length == l2.length);
         float[] lower = new float[l1.length];
         for(int i=0; i<l1.length; i++){

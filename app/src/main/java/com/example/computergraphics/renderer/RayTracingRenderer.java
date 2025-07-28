@@ -1,30 +1,25 @@
 package com.example.computergraphics.renderer;
 
-import android.graphics.Color;
-import android.nfc.Tag;
+import android.content.res.AssetManager;
 import android.opengl.GLES30;
-import android.opengl.GLSurfaceView;
-import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.content.Context;
-import android.util.Log;
-import android.graphics.Bitmap;
 
-import androidx.compose.ui.graphics.GraphicsContext;
-
-import com.example.computergraphics.Camera;
+import com.example.computergraphics.camera.Camera;
 import com.example.computergraphics.PointLight;
 import com.example.computergraphics.R;
 import com.example.computergraphics.object.*;
 import com.example.computergraphics.utils.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class BasicRayTracingRenderer extends BaseRenderer {
+public class RayTracingRenderer extends BaseRenderer {
     int width, height;
     float[] lookAt = {0f, 0f, 0f};
     float aspect;
@@ -41,7 +36,8 @@ public class BasicRayTracingRenderer extends BaseRenderer {
     float[] FULLY_REFLECTIVE = {0f, 1f, 0f};
     float[] FULLY_REFRACTIVE = {0f, 0f, 1f};
     float[] HALF_REFLECTIVE = {0.5f, 0.5f, 0f};
-    public BasicRayTracingRenderer(Context context){
+    float MIN_TRANSMITTANCE = 0.01f;
+    public RayTracingRenderer(Context context){
         this.context = context;
         this.eye = new float[]{0.0f, 0.0f, 3.0f};
     }
@@ -58,25 +54,36 @@ public class BasicRayTracingRenderer extends BaseRenderer {
         program = new Program(vertexShaderCode, fragmentShaderCode);
         ground = new Sphere(
             new float[] {0f, -1000, 0},
-            999.5f,
+            998f,
             context
         );
         ground.setColor(ArgbColor.white);
         objectList.add(ground);
         Sphere s1 = new Sphere(new float[] {0f, 0f, 0f}, 0.5f, context);
         Sphere s2 = new Sphere(new float[] {1f, 0f, 0f}, 0.5f, context);
-        Sphere s3 = new Sphere(new float[] {0f, 0f, 1f}, 0.5f, context);
+        Sphere s3 = new Sphere(new float[] {0f, 0f, 1.75f}, 0.5f, context);
         Sphere s4 = new Sphere(new float[] {-1f, 0f, 0f}, 0.5f, context);
-        s1.colorCoefficient = FULLY_REFLECTIVE;
+        s2.colorCoefficient = FULLY_REFLECTIVE;
         s3.colorCoefficient = FULLY_REFRACTIVE;
-        s4.colorCoefficient = HALF_REFLECTIVE;
-        objectList.add(s1);
-        objectList.add(s2);
+        s4.colorCoefficient = FULLY_REFRACTIVE;
+//        objectList.add(s1);
+//        objectList.add(s2);
 //        objectList.add(s3);
-        objectList.add(s4);
-        pointLights.add(new PointLight(new float[] {0f, 3f, 5f}, ArgbColor.white));
-        pointLights.add(new PointLight(new float[] {0f, -3f, 5f}, ArgbColor.white));
-        pointLights.add(new PointLight(new float[] {0f, 3f, 3f}, ArgbColor.white));
+//        objectList.add(s4);
+        pointLights.add(new PointLight(new float[] {0f, 10f, 0f}, ArgbColor.white));
+        pointLights.add(new PointLight(new float[] {0f, 8f, 5f}, ArgbColor.white));
+        pointLights.add(new PointLight(new float[] {-5f, 8f, 0f}, ArgbColor.white));
+        GraphicObject object;
+        try {
+            AssetManager assetManager = context.getAssets();
+            InputStream inputStream = assetManager.open("Lowpoly_tree_sample.obj");
+            object = new GraphicObject(inputStream, context);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        object.setScale(new float[] {0.1f, 0.1f, 0.1f});
+        object.setTranslation(new float[] {0f, -1f, 0f});
+//        objectList.add(object);
     }
 
     @Override
@@ -95,8 +102,8 @@ public class BasicRayTracingRenderer extends BaseRenderer {
         Matrix.frustumM(projectionMatrix, 0, -aspect, aspect, -1, 1, 1, 10);
         program.useProgram();
         camera = new Camera(
-            width,
-            height,
+            width / 4,
+            height / 4,
             objectList,
             eye,
             forward,
@@ -105,6 +112,8 @@ public class BasicRayTracingRenderer extends BaseRenderer {
             aspect,
             MAXIMUM_REFLECTION,
             BACKGROUND_COLOR,
+            AIR_REFRACTIVE_INDEX,
+            MIN_TRANSMITTANCE,
             pointLights,
             context
         );

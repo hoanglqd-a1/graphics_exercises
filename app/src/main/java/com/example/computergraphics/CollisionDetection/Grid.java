@@ -16,7 +16,7 @@ import java.util.Set;
 
 
 public class Grid {
-    float control = 1f;
+    final float control = 1f;
     public float[][] gridBBox = new float[3][2];
     int[] resolution;
     float[] voxelSize;

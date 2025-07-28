@@ -5,9 +5,9 @@ import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
 
 import com.example.computergraphics.renderer.BaseRenderer;
-import com.example.computergraphics.renderer.BasicRayTracingRenderer;
-import com.example.computergraphics.renderer.CollisionDetectionRenderer;
+import com.example.computergraphics.renderer.RayTracingRenderer;
 import com.example.computergraphics.renderer.TestRenderer;
+import com.example.computergraphics.renderer.VolumeRenderer;
 
 public class MyGLSurfaceView extends GLSurfaceView {
     private final BaseRenderer renderer;
@@ -20,7 +20,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
         setEGLContextClientVersion(3);
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 //        renderer = new CollisionDetectionRenderer(source, direction, context);
-        renderer = new BasicRayTracingRenderer(context);
+//        renderer = new RayTracingRenderer(context);
+        renderer = new VolumeRenderer(context);
 //        renderer = new TestRenderer(context);
 
         setRenderer(renderer);
@@ -53,8 +54,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
                }
 
                renderer.setAngle(
-                       renderer.getAngle() +
-                               ((dx + dy) * TOUCH_SCALE_FACTOR));
+                   renderer.getAngle() +
+                       ((dx + dy) * TOUCH_SCALE_FACTOR));
                requestRender();
        }
 

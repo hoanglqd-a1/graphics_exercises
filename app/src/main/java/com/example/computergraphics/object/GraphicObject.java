@@ -20,6 +20,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class GraphicObject {
     public Context context;
@@ -45,7 +46,9 @@ public class GraphicObject {
     public final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     public final int normalStride = COORDS_PER_VERTEX * 4;
     public float[] colorCoefficient = {1f, 0f, 0f};
-    public float refractionIndex = 1.2f;
+    public float refractiveIndex = 1.4f;
+    public boolean isVolume = false;
+    public float volumeDensity;
     public GraphicObject(Context context){
         this.context = context;
         this.mtl = new MaterialFileHandle("default");
@@ -85,7 +88,7 @@ public class GraphicObject {
 //                }
 //                this.mtl = this.readMaterialFile(mtlfile);
             }
-            if (tokens[0].equals("v")){
+            else if (tokens[0].equals("v")){
                 vertices.add(Float.parseFloat(tokens[1]));
                 vertices.add(Float.parseFloat(tokens[2]));
                 vertices.add(Float.parseFloat(tokens[3]));
@@ -103,20 +106,20 @@ public class GraphicObject {
                 int verticesCount = tokens.length;
                 String [] token1 = tokens[1].split("/");
                 for (int i = 2; i < verticesCount - 1; i++){
-                    String [] token2 = tokens[i].split("/");
-                    String [] token3 = tokens[i+1].split("/");
-                    vfaces.add((int) (Integer.parseInt(token1[0]) - 1));
-                    vfaces.add((int) (Integer.parseInt(token2[0]) - 1));
-                    vfaces.add((int) (Integer.parseInt(token3[0]) - 1));
-                    if (token1.length >= 2 && token1[1] != ""){
-                        tfaces.add((int) (Integer.parseInt(token1[1]) - 1));
-                        tfaces.add((int) (Integer.parseInt(token2[1]) - 1));
-                        tfaces.add((int) (Integer.parseInt(token3[1]) - 1));
+                    String[] token2 = tokens[i].split("/");
+                    String[] token3 = tokens[i+1].split("/");
+                    vfaces.add(Integer.parseInt(token1[0]) - 1);
+                    vfaces.add(Integer.parseInt(token2[0]) - 1);
+                    vfaces.add(Integer.parseInt(token3[0]) - 1);
+                    if (token1.length >= 2 && !token1[1].isEmpty()){
+                        tfaces.add(Integer.parseInt(token1[1]) - 1);
+                        tfaces.add(Integer.parseInt(token2[1]) - 1);
+                        tfaces.add(Integer.parseInt(token3[1]) - 1);
                     }
-                    if (token1.length == 3 && token1[1] != ""){
-                        nfaces.add((int) (Integer.parseInt(token1[2]) - 1));
-                        nfaces.add((int) (Integer.parseInt(token2[2]) - 1));
-                        nfaces.add((int) (Integer.parseInt(token3[2]) - 1));
+                    if (token1.length == 3){
+                        nfaces.add(Integer.parseInt(token1[2]) - 1);
+                        nfaces.add(Integer.parseInt(token2[2]) - 1);
+                        nfaces.add(Integer.parseInt(token3[2]) - 1);
                     }
                 }
             }
@@ -186,6 +189,7 @@ public class GraphicObject {
         return buffer;
     }
     static float [] createData (float[] coords, int[] order, int stride) {
+        if (coords.length == 0) return null;
         float [] data = new float[order.length * stride];
         for (int i = 0; i < order.length; i++){
             int index = order[i];

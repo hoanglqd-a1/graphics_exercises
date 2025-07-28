@@ -1,8 +1,10 @@
 package com.example.computergraphics.renderer;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import com.example.computergraphics.R;
 import com.example.computergraphics.object.Cube;
@@ -13,6 +15,8 @@ import com.example.computergraphics.object.*;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public class TestRenderer extends BaseRenderer{
@@ -24,6 +28,7 @@ public class TestRenderer extends BaseRenderer{
     Program program;
     Sphere sphere;
     Cube cube;
+    GraphicObject object;
     Ray ray;
     public TestRenderer(Context context){
         this.context = context;
@@ -45,6 +50,15 @@ public class TestRenderer extends BaseRenderer{
         cube = new Cube(context);
         ray = new Ray(MatrixUtils.mul(MatrixUtils.randomVector(3), 0.5f),
                 MatrixUtils.randomVector(3), context);
+        try {
+            AssetManager assetManager = context.getAssets();
+            InputStream inputStream = assetManager.open("Lowpoly_tree_sample.obj");
+            object = new GraphicObject(inputStream, context);
+            object.setScale(new float[] {0.1f, 0.1f, 0.1f});
+            inputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -71,14 +85,15 @@ public class TestRenderer extends BaseRenderer{
                 0f, 1.0f, 0.0f);
         Matrix.multiplyMM(vpMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
 
-        program.draw(sphere);
+//        program.draw(sphere);
 //        program.draw(cube);
-        program.draw(ray);
-        List<GraphicObject.Intersection> intersections = sphere.getIntersectionsWithRay(ray);
-        for(GraphicObject.Intersection intersection : intersections){
-            if (intersection.position!= null){
-                program.draw(new Point(intersection.position, context));
-            }
-        }
+//        program.draw(ray);
+//        List<GraphicObject.Intersection> intersections = sphere.getIntersectionsWithRay(ray);
+//        for(GraphicObject.Intersection intersection : intersections){
+//            if (intersection.position!= null){
+//                program.draw(new Point(intersection.position, context));
+//            }
+//        }
+        program.draw(object);
     }
 }

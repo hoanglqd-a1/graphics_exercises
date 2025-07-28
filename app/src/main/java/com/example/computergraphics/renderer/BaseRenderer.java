@@ -17,7 +17,7 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
     protected float[] vpMatrix = new float[16];
     protected float[] projectionMatrix = new float[16];
     protected float[] viewMatrix = new float [16];
-    protected float[] eye = { 0.0f, 2.0f, 3.0f };
+    protected float[] eye = { 0.0f, 0.0f, 3.0f };
     protected float[] lightSource;
     public volatile float mAngle;
     public float getAngle() {
@@ -101,15 +101,15 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
             float[] color = o.getColor();
             GLES30.glUniform4fv(colorHandle, 1, color, 0);
             o.modelMatrix = Utils.getModelMatrix(o.translation, o.rotation, o.scale);
-            float [] vpMatrix = new float[16];
+            float[] vpMatrix = new float[16];
             Matrix.multiplyMM(vpMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
-            float [] mvpMatrix = new float[16];
+            float[] mvpMatrix = new float[16];
             Matrix.multiplyMM(mvpMatrix, 0, vpMatrix, 0, o.modelMatrix, 0);
 
             // Pass the projection and view transformation to the shader
             GLES30.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix, 0);
 
-            float [] mvMatrix = new float[16];
+            float[] mvMatrix = new float[16];
             Matrix.multiplyMM(mvMatrix, 0, viewMatrix, 0, o.modelMatrix, 0);
             GLES30.glUniformMatrix4fv(mvMatrixHandle, 1, false, mvMatrix, 0);
 
@@ -148,10 +148,10 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
                 GLES30.glUniform1i(useNormal, 1);
                 GLES30.glEnableVertexAttribArray(normalHandle);
                 GLES30.glVertexAttribPointer(normalHandle, GraphicObject.COORDS_PER_NORMAL,
-                        GLES30.GL_FLOAT, false,
-                        o.normalStride, o.normalBuffer);
+                    GLES30.GL_FLOAT, false,
+                    o.normalStride, o.normalBuffer);
             }
-            if (o instanceof Point){
+            if (o instanceof Point) {
                 GLES30.glDrawArrays(GLES30.GL_POINTS, 0, o.vertexData.length / GraphicObject.COORDS_PER_VERTEX);
             } else if (o instanceof Ray) {
                 GLES30.glDrawArrays(GLES30.GL_LINES, 0, o.vertexData.length / GraphicObject.COORDS_PER_VERTEX);
@@ -166,50 +166,6 @@ public abstract class BaseRenderer implements GLSurfaceView.Renderer {
         }
         public void useProgram(){
             GLES30.glUseProgram(program);
-        }
-    }
-    public class RayTracingProgram{
-        int program;
-
-        int positionHandle;
-        int textureCoordinateHandle;
-        int useTexture;
-        int useNormal;
-
-        public RayTracingProgram(String vertexShaderCode, String fragmentShaderCode){
-            this.program = GLES30.glCreateProgram();
-
-            int vertexShader = loadShader(GLES30.GL_VERTEX_SHADER,
-                    vertexShaderCode);
-            int fragmentShader = loadShader(GLES30.GL_FRAGMENT_SHADER,
-                    fragmentShaderCode);
-            // create empty OpenGL ES Program
-            GLES30.glAttachShader(program, vertexShader);
-            GLES30.glAttachShader(program, fragmentShader);
-            GLES30.glLinkProgram(program);
-
-            int[] linkStatus = new int[1];
-            GLES30.glGetProgramiv(program, GLES30.GL_LINK_STATUS, linkStatus, 0);
-            if (linkStatus[0] == 0) {
-                // Linking failed
-                Log.e("Shader", "Program linking failed.");
-                Log.e("Shader", GLES30.glGetProgramInfoLog(program));
-            }
-
-            positionHandle = GLES30.glGetAttribLocation(program, "aPosition");
-            textureCoordinateHandle = GLES30.glGetAttribLocation(program, "aTexCoordinate");
-            useTexture = GLES30.glGetUniformLocation(program, "uUseTexture");
-            useNormal = GLES30.glGetUniformLocation(program, "uUseNormal");
-        }
-        public void draw(GraphicObject o){
-            GLES30.glEnableVertexAttribArray(positionHandle);
-            GLES30.glVertexAttribPointer(positionHandle,
-                    2, GLES30.GL_FLOAT,
-                    false, 0, o.vertexBuffer);
-
-            MaterialFileHandle mtl = o.mtl;
-            int textureHandle = mtl.textureHandle;
-            GLES30.glUniform1i(useTexture, 0);
         }
     }
 }

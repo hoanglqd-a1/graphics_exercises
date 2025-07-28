@@ -23,7 +23,6 @@ public class KDTree {
     private final int MAX_DEPTH = 15;
     private int MINIMUM_OBJ_IN_LEAF = 1;
     public KDNode rootNode;
-    public int count = 0;
     public KDTree(List<GraphicObject> objects){
         List<BBox> objBboxes =  new ArrayList<>();
         for(GraphicObject object: objects){
